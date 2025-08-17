@@ -1,150 +1,371 @@
-#include <stdio.h>
-#include "esp_log.h"
-#include "esp_check.h"
-#include "driver/i2c_master.h"
-#include "driver/gpio.h"
+﻿#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <math.h>
+#include <inttypes.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_rom/esp_rom_sys.h"
+#include "freertos/queue.h"
+#include "driver/i2c.h"
+#include "driver/gpio.h"
+#include "esp_log.h"
+#include "esp_err.h"
 
-static const char* TAG = "i2c_scan";
+#define TAG               "MAX30102_HR"
 
-// ===== ������ =====
-#define I2C_SDA_PIN        19
-#define I2C_SCL_PIN        20
-#define I2C_PORT           0
-#define I2C_FREQ_HZ        50000   // ���� Ǯ���̸� 50kHz ������ ���� ������ Ȯ��
-#define PROBE_TIMEOUT_MS   2000
-#define PROBE_RETRY        3
-#define EXPECT_ADDR_1      0x57    // MAX30102 �ּ�
+// I2C
+#define I2C_NUM           I2C_NUM_0
+#define SDA_PIN           4
+#define SCL_PIN           5
+#define I2C_FREQ          400000
+#define I2C_TIMEOUT_MS    1000
 
-// ===== ���� ��Ŀ����(���� stuck ����) =====
-static void i2c_bus_recovery_gpio(void) {
-    gpio_config_t io = {
-        .pin_bit_mask = (1ULL << I2C_SCL_PIN) | (1ULL << I2C_SDA_PIN),
-        .mode = GPIO_MODE_INPUT_OUTPUT_OD,
-        .pull_up_en = 1,
-        .pull_down_en = 0,
-        .intr_type = GPIO_INTR_DISABLE
+// MAX30102
+#define ADDR              0x57
+#define REG_INTR_STATUS_1 0x00
+#define REG_INTR_STATUS_2 0x01
+#define REG_INTR_ENABLE_1 0x02
+#define REG_INTR_ENABLE_2 0x03
+#define REG_FIFO_WR_PTR   0x04
+#define REG_OVF_COUNTER   0x05
+#define REG_FIFO_RD_PTR   0x06
+#define REG_FIFO_DATA     0x07
+#define REG_FIFO_CONF     0x08
+#define REG_MODE          0x09
+#define REG_SPO2          0x0A
+#define REG_LED1          0x0C
+#define REG_LED2          0x0D
+
+// 설정
+// FIFO_CONF: [7:5]=SMP_AVE(8x=011), [4]=ROLLOVER(1), [3:0]=A_FULL(7 → 여유 8샘플 시 인터럽트)
+#define FIFO_CONF_INIT    0xDF  // 1101 1111? -> (011<<5)=0x60, ROLLOVER=0x10, A_FULL=0x0F 아님 주의
+// 위 한줄 혼란 방지: 직접 값 지정
+// SMP_AVE=8x(0b011<<5=0x60) | ROLLOVER=0x10 | A_FULL=7(0x07) = 0x60+0x10+0x07 = 0x77
+#undef  FIFO_CONF_INIT
+#define FIFO_CONF_INIT    0x77  // 최종: 0b0111 0111 = 0x77
+
+// 모드/샘플
+#define MODE_HEART        0x02         // HR-only(IR만)
+#define SPO2_STD          0x27         // SR=100Hz(001), LED_PW=411us(11), (상위 SMP_AVE는 FIFO에서 설정)
+#define LED_STD           0x22         // ~7.6mA (필요시 조정)
+
+// GPIO/INT
+#define MAX30102_INT_GPIO   GPIO_NUM_8
+#define INT_PIN_SEL         (1ULL << MAX30102_INT_GPIO)
+
+// 버스트/포맷
+#define BURST_SZ              8
+#define BYTES_PER_SAMPLE      3   // HR-only → IR 18bit = 3 bytes
+
+// HR 파라미터
+#define SR_HZ             100.0f      // SPO2_STD의 SR과 일치
+#define MIN_BPM           40.0f
+#define MAX_BPM           200.0f
+#define IR_ON_THRESHOLD   50000U
+#define IR_OFF_THRESHOLD  35000U
+#define STABLE_COUNT      12
+#define MIN_RR_MS         340
+#define HR_SMOOTH_N       5
+#define MA_N              100
+
+// 밴드패스(0.7–3.5Hz @100Hz), a0=1
+static const float a_bp[3] = { 1.0f, -1.5610180758007182f, 0.6413515380575631f };
+static const float b_bp[3] = { 0.020083365564211235f, 0.0f, -0.020083365564211235f };
+
+// 인터럽트 큐
+static QueueHandle_t s_int_queue = NULL;
+static volatile uint32_t s_isr_cnt = 0;
+
+// 필터/상태
+static float z1 = 0.0f, z2 = 0.0f;
+static float ma_buf[MA_N] = { 0 };
+static int ma_i = 0, ma_cnt = 0;
+static float ma_sum = 0.0f;
+static float hrBuf[HR_SMOOTH_N] = { 0 };
+static int hrCount = 0, hrIdx = 0;
+static bool worn = false;
+static int on_cnt = 0, off_cnt = 0;
+static float prev_y = 0.0f, last_y = 0.0f;
+static float last_peak_ms = -1.0f;
+static float noise_ma = 0.0f;
+static uint32_t sample_idx = 0;  // 샘플 시간축(버스트 영향 제거)
+
+// I2C 유틸
+static esp_err_t i2c_init(void) {
+    i2c_config_t cfg = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = SDA_PIN,
+        .scl_io_num = SCL_PIN,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = I2C_FREQ,
     };
-    gpio_config(&io);
-
-    if (gpio_get_level(I2C_SDA_PIN) == 0) {
-        for (int i = 0; i < 9; i++) {
-            gpio_set_level(I2C_SCL_PIN, 1);
-            esp_rom_delay_us(5);
-            gpio_set_level(I2C_SCL_PIN, 0);
-            esp_rom_delay_us(5);
-        }
+    esp_err_t err = i2c_param_config(I2C_NUM, &cfg);
+    if (err != ESP_OK) { ESP_LOGE(TAG, "i2c_param_config failed: %s", esp_err_to_name(err)); return err; }
+    err = i2c_driver_install(I2C_NUM, cfg.mode, 0, 0, 0);
+    if (err != ESP_OK) { ESP_LOGE(TAG, "i2c_driver_install failed: %s", esp_err_to_name(err)); return err; }
+    return ESP_OK;
+}
+static esp_err_t write_reg(uint8_t reg, uint8_t val) {
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, reg, true);
+    i2c_master_write_byte(cmd, val, true);
+    i2c_master_stop(cmd);
+    esp_err_t r = i2c_master_cmd_begin(I2C_NUM, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+    i2c_cmd_link_delete(cmd);
+    if (r != ESP_OK) ESP_LOGE(TAG, "WRITE reg 0x%02X val 0x%02X fail=%s", reg, val, esp_err_to_name(r));
+    return r;
+}
+static esp_err_t read_regs(uint8_t reg, uint8_t* buf, size_t len) {
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, reg, true);
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ADDR << 1) | I2C_MASTER_READ, true);
+    for (size_t i = 0; i < len; i++) {
+        i2c_master_read_byte(cmd, &buf[i], (i < len - 1) ? I2C_MASTER_ACK : I2C_MASTER_NACK);
     }
-    gpio_set_level(I2C_SDA_PIN, 0);
-    esp_rom_delay_us(5);
-    gpio_set_level(I2C_SCL_PIN, 1);
-    esp_rom_delay_us(5);
-    gpio_set_level(I2C_SDA_PIN, 1);
-    esp_rom_delay_us(5);
+    i2c_master_stop(cmd);
+    esp_err_t r = i2c_master_cmd_begin(I2C_NUM, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+    i2c_cmd_link_delete(cmd);
+    if (r != ESP_OK) ESP_LOGE(TAG, "READ reg 0x%02X len %u fail=%s", reg, (unsigned)len, esp_err_to_name(r));
+    return r;
 }
 
-static bool i2c_lines_idle_check(void) {
-    gpio_config_t io = {
-        .pin_bit_mask = (1ULL << I2C_SCL_PIN) | (1ULL << I2C_SDA_PIN),
-        .mode = GPIO_MODE_INPUT_OUTPUT_OD,
-        .pull_up_en = 1,
-        .pull_down_en = 0,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&io);
-
-    for (int i = 0; i < 1000; i++) {
-        if (gpio_get_level(I2C_SDA_PIN) == 1 && gpio_get_level(I2C_SCL_PIN) == 1)
-            return true;
-        esp_rom_delay_us(1);
-    }
-    return false;
-}
-
-static esp_err_t new_bus(i2c_master_bus_handle_t* out) {
-    i2c_master_bus_config_t bus_cfg = {
-        .i2c_port = I2C_PORT,
-        .sda_io_num = I2C_SDA_PIN,
-        .scl_io_num = I2C_SCL_PIN,
-        .clk_source = I2C_CLK_SRC_DEFAULT,
-        .glitch_ignore_cnt = 7,
-        .flags = {
-            .enable_internal_pullup = true
-        },
-    };
-    return i2c_new_master_bus(&bus_cfg, out);
-}
-
-static esp_err_t probe_with_retry(i2c_master_bus_handle_t bus, uint16_t addr, uint32_t timeout_ms) {
-    for (int i = 0; i < PROBE_RETRY; i++) {
-        esp_err_t err = i2c_master_probe(bus, addr, timeout_ms);
-        if (err == ESP_OK) return ESP_OK;
-        if (err == ESP_ERR_NOT_FOUND) return err;
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-    return ESP_FAIL;
-}
-
-static void prioritize_expected(i2c_master_bus_handle_t bus) {
-    uint16_t a = EXPECT_ADDR_1;
-    esp_err_t err = probe_with_retry(bus, a, PROBE_TIMEOUT_MS);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Found expected device at 0x%02X", a);
-    }
-    else if (err == ESP_ERR_NOT_FOUND) {
-        ESP_LOGI(TAG, "No device at expected 0x%02X (NACK)", a);
-    }
-    else if (err == ESP_ERR_TIMEOUT) {
-        ESP_LOGW(TAG, "TIMEOUT at expected 0x%02X (���� ����/�輱 �ǽ�)", a);
+// 상태 클리어 & FIFO 리셋
+static void clear_interrupt_status(void) {
+    uint8_t s1 = 0, s2 = 0;
+    if (read_regs(REG_INTR_STATUS_1, &s1, 1) == ESP_OK &&
+        read_regs(REG_INTR_STATUS_2, &s2, 1) == ESP_OK) {
+        ESP_LOGI(TAG, "Cleared INT status: s1=0x%02X s2=0x%02X", s1, s2);
     }
     else {
-        ESP_LOGE(TAG, "Probe 0x%02X error: %s", a, esp_err_to_name(err));
+        ESP_LOGE(TAG, "Failed to read INT status for clear");
     }
 }
+static void fifo_reset(void) {
+    write_reg(REG_FIFO_WR_PTR, 0x00);
+    write_reg(REG_OVF_COUNTER, 0x00);
+    write_reg(REG_FIFO_RD_PTR, 0x00);
+}
 
-static void scan_all(i2c_master_bus_handle_t bus) {
-    int found = 0;
-    for (uint16_t addr = 0x03; addr <= 0x77; addr++) {
-        esp_err_t err = i2c_master_probe(bus, addr, PROBE_TIMEOUT_MS);
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "Found device at 0x%02X", addr);
-            found++;
+// FIFO 포인터/카운트
+static int fifo_count_debug(void) {
+    uint8_t wr = 0, rd = 0, ovf = 0;
+    if (read_regs(REG_FIFO_WR_PTR, &wr, 1) != ESP_OK) { ESP_LOGE(TAG, "read WR_PTR fail"); return -1; }
+    if (read_regs(REG_OVF_COUNTER, &ovf, 1) != ESP_OK) { ESP_LOGW(TAG, "read OVF fail"); }
+    if (read_regs(REG_FIFO_RD_PTR, &rd, 1) != ESP_OK) { ESP_LOGE(TAG, "read RD_PTR fail"); return -1; }
+    int cnt = (int)((wr - rd) & 0x1F);
+    ESP_LOGD(TAG, "FIFO ptr wr=%u rd=%u ovf=%u cnt=%d", wr, rd, ovf, cnt);
+    return cnt;
+}
+
+// 버스트 IR 읽기
+static esp_err_t fifo_read_n_ir(int n, uint32_t* out_ir) {
+    if (n <= 0 || n > BURST_SZ) return ESP_ERR_INVALID_ARG;
+    uint8_t buf[BURST_SZ * BYTES_PER_SAMPLE] = { 0 };
+    int bytes = n * BYTES_PER_SAMPLE;
+    esp_err_t r = read_regs(REG_FIFO_DATA, buf, bytes);
+    if (r != ESP_OK) return r;
+    for (int i = 0; i < n; i++) {
+        const uint8_t* p = &buf[i * 3];
+        out_ir[i] = (((uint32_t)p[0] & 0x03) << 16) | ((uint32_t)p[1] << 8) | p[2];
+    }
+    return ESP_OK;
+}
+
+// 신호 처리
+static float dc_remove(float x) {
+    ma_sum += x - ma_buf[ma_i];
+    ma_buf[ma_i] = x;
+    ma_i = (ma_i + 1) % MA_N;
+    if (ma_cnt < MA_N) ma_cnt++;
+    float dc = ma_sum / (float)ma_cnt;
+    return x - dc;
+}
+static float biquad_bp(float x) {
+    float y = b_bp[0] * x + z1;
+    z1 = b_bp[1] * x - a_bp[1] * y + z2;
+    z2 = b_bp[2] * x - a_bp[2] * y;
+    return y;
+}
+static float smooth_hr(float hr) {
+    hrBuf[hrIdx] = hr;
+    hrIdx = (hrIdx + 1) % HR_SMOOTH_N;
+    if (hrCount < HR_SMOOTH_N) hrCount++;
+    float s = 0.0f;
+    for (int i = 0; i < hrCount; i++) s += hrBuf[i];
+    return s / (float)hrCount;
+}
+static void reset_filter_states(void) {
+    z1 = z2 = 0.0f;
+    prev_y = last_y = 0.0f;
+    noise_ma = 0.0f;
+    for (int i = 0; i < MA_N; i++) ma_buf[i] = 0.0f;
+    ma_i = 0; ma_cnt = 0; ma_sum = 0.0f;
+    hrCount = 0; hrIdx = 0;
+    for (int i = 0; i < HR_SMOOTH_N; i++) hrBuf[i] = 0.0f;
+    last_peak_ms = -1.0f;
+}
+
+// 샘플 처리: 샘플 인덱스 기반 시간(ms) 전달
+static void process_sample(uint32_t ir_raw, float t_ms) {
+    // 착용 판정
+    if (!worn) {
+        if (ir_raw > IR_ON_THRESHOLD) {
+            if (++on_cnt > STABLE_COUNT) {
+                worn = true; on_cnt = 0; off_cnt = 0;
+                reset_filter_states();
+                ESP_LOGI(TAG, "Finger ON");
+            }
         }
-        else if (err == ESP_ERR_TIMEOUT) {
-            ESP_LOGW(TAG, "TIMEOUT at 0x%02X (�輱/Ǯ�� ����)", addr);
+        else {
+            on_cnt = 0;
+        }
+        return;
+    }
+    else {
+        if (ir_raw < IR_OFF_THRESHOLD) {
+            if (++off_cnt > STABLE_COUNT) {
+                worn = false; off_cnt = 0; on_cnt = 0;
+                ESP_LOGW(TAG, "Finger OFF");
+                return;
+            }
+        }
+        else {
+            off_cnt = 0;
         }
     }
-    if (found == 0) {
-        ESP_LOGW(TAG, "No I2C devices found");
+
+    float x = (float)ir_raw;
+    x = dc_remove(x);
+    float y = biquad_bp(x);
+
+    float abs_y = fabsf(y);
+    // 임계 스케일을 1.0부터 시작해 너무 낮게/높게 튀는 걸 방지
+    noise_ma = 0.97f * noise_ma + 0.03f * abs_y;
+    float thr = fmaxf(0.05f, 1.0f * noise_ma);
+
+    if (prev_y < last_y && last_y >= y && last_y > thr) {
+        if (last_peak_ms < 0.0f) {
+            last_peak_ms = t_ms;
+        }
+        else {
+            float rr = t_ms - last_peak_ms;
+            if (rr > MIN_RR_MS) {
+                last_peak_ms = t_ms;
+                float hr = 60000.0f / rr;
+                float hr_s = smooth_hr(hr);
+                if (hr_s >= MIN_BPM && hr_s <= MAX_BPM) {
+                    ESP_LOGI(TAG, "Heart Rate: %.1f BPM", hr_s);
+                }
+                else {
+                    ESP_LOGW(TAG, "HR out of range: %.1f BPM (raw=%.1f)", hr_s, hr);
+                }
+            }
+        }
+    }
+    prev_y = last_y;
+    last_y = y;
+}
+
+// ISR
+static void IRAM_ATTR int_isr(void* arg) {
+    s_isr_cnt++;
+    uint32_t gpio_num = (uint32_t)arg;
+    BaseType_t hpw = pdFALSE;
+    xQueueSendFromISR(s_int_queue, &gpio_num, &hpw);
+    if (hpw) portYIELD_FROM_ISR();
+}
+
+// 인터럽트 태스크
+static void int_task(void* arg) {
+    uint32_t io_num;
+    uint32_t ir_buf[BURST_SZ];
+
+    const float Ts_ms = 1000.0f / SR_HZ;
+
+    while (1) {
+        if (!xQueueReceive(s_int_queue, &io_num, portMAX_DELAY)) continue;
+
+        // 상태 읽어 클리어
+        uint8_t int1 = 0, int2 = 0;
+        if (read_regs(REG_INTR_STATUS_1, &int1, 1) != ESP_OK ||
+            read_regs(REG_INTR_STATUS_2, &int2, 1) != ESP_OK) {
+            ESP_LOGE(TAG, "INT_STATUS read fail");
+            continue;
+        }
+
+        int cnt = fifo_count_debug();
+        if (cnt <= 0) continue;
+
+        int left = cnt;
+        while (left > 0) {
+            int n = (left >= BURST_SZ) ? BURST_SZ : left;
+            if (fifo_read_n_ir(n, ir_buf) != ESP_OK) {
+                ESP_LOGE(TAG, "fifo_read_n_ir fail");
+                break;
+            }
+            for (int i = 0; i < n; i++) {
+                float t_ms = (sample_idx * Ts_ms);
+                process_sample(ir_buf[i], t_ms);
+                sample_idx++;
+            }
+            left -= n;
+        }
     }
 }
 
 void app_main(void) {
-    ESP_LOGI(TAG, "Checking I2C line idle status...");
-    if (!i2c_lines_idle_check()) {
-        ESP_LOGW(TAG, "I2C lines not idle. Trying recovery...");
-        i2c_bus_recovery_gpio();
-        if (!i2c_lines_idle_check()) {
-            ESP_LOGE(TAG, "Still not idle. �輱/Ǯ��/�ռ� ���� �ʿ�.");
-        }
-        else {
-            ESP_LOGI(TAG, "Bus recovery succeeded.");
-        }
-    }
-    else {
-        ESP_LOGI(TAG, "Lines idle.");
+    if (i2c_init() != ESP_OK) {
+        ESP_LOGE(TAG, "I2C init failed");
+        return;
     }
 
-    i2c_master_bus_handle_t bus = NULL;
-    ESP_ERROR_CHECK(new_bus(&bus));
+    vTaskDelay(pdMS_TO_TICKS(10));
+    clear_interrupt_status();
+    fifo_reset();
+    vTaskDelay(pdMS_TO_TICKS(5));
 
-    ESP_LOGI(TAG, "Prioritized probe...");
-    prioritize_expected(bus);
+    // 설정
+    write_reg(REG_FIFO_CONF, FIFO_CONF_INIT); // SMP_AVE=8, ROLLOVER=1, A_FULL=7
+    write_reg(REG_SPO2, SPO2_STD);       // SR=100Hz, PW=411us
+    write_reg(REG_LED1, LED_STD);
+    write_reg(REG_LED2, LED_STD);
+    write_reg(REG_MODE, MODE_HEART);     // HR-only(IR)
 
-    ESP_LOGI(TAG, "Full I2C scan at %dkHz", I2C_FREQ_HZ / 1000);
-    scan_all(bus);
+    // 인터럽트: A_FULL만
+    write_reg(REG_INTR_ENABLE_1, 0x80);
+    write_reg(REG_INTR_ENABLE_2, 0x00);
 
-    ESP_ERROR_CHECK(i2c_del_master_bus(bus));
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+    // GPIO8(INT)
+    gpio_config_t io_conf = {
+        .pin_bit_mask = INT_PIN_SEL,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = 1,  // 외부 풀업 있으면 0
+        .pull_down_en = 0,
+        .intr_type = GPIO_INTR_NEGEDGE
+    };
+    ESP_ERROR_CHECK(gpio_config(&io_conf));
+
+    int init_lvl = gpio_get_level(MAX30102_INT_GPIO);
+    ESP_LOGI(TAG, "INT GPIO%d level=%d (idle should be 1)", (int)MAX30102_INT_GPIO, init_lvl);
+
+    // 큐/태스크/ISR
+    s_int_queue = xQueueCreate(16, sizeof(uint32_t));
+    if (!s_int_queue) { ESP_LOGE(TAG, "xQueueCreate failed"); return; }
+    if (xTaskCreate(int_task, "max30102_int_task", 4096, NULL, 10, NULL) != pdPASS) {
+        ESP_LOGE(TAG, "xTaskCreate failed"); return;
+    }
+    ESP_ERROR_CHECK(gpio_install_isr_service(0));
+    ESP_ERROR_CHECK(gpio_isr_handler_add(MAX30102_INT_GPIO, int_isr, (void*)MAX30102_INT_GPIO));
+
+    ESP_LOGI(TAG, "Ready (BURST=%d, SR=%.0f sps, SMP_AVE=8, A_FULL=7)", BURST_SZ, SR_HZ);
+
+    while (1) vTaskDelay(pdMS_TO_TICKS(1000));
 }
