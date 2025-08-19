@@ -132,7 +132,9 @@ void SolicareDevice::run()
         };
 
 
-}void SolicareDevice::send_bpm_json(float bpm, const char* status, uint32_t t_ms) {
+}
+
+void SolicareDevice::send_bpm_json(float bpm, const char* status, uint32_t t_ms) {
     if (!socket_client_) {
         ESP_LOGW(TAG, "WebSocket client not ready");
         return;
@@ -142,11 +144,9 @@ void SolicareDevice::run()
         return;
     }
 
-        // 반드시 배열로 선언
+    
     char json[192];
 
-    // JSON 문자열에서 쌍따옴표는 \" 로 이스케이프
-    // 공백이나 % s 같은 오탈자 없이 정확히 작성
     int n = snprintf(json, sizeof(json),
         "{\"device\":\"%s\",\"bpm\":%.1f,\"timestamp_ms\":%u,\"status\":\"%s\"}",
         config_.device_name.c_str(),

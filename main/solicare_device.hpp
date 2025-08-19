@@ -40,7 +40,9 @@ class SolicareDevice
 		{
 		}
 	};
+
 	void send_bpm_json(float bpm, const char* status, uint32_t t_ms);
+
 	explicit SolicareDevice(const Config& config = Config{}) : config_(config)
 	{
 	}
@@ -54,9 +56,4 @@ class SolicareDevice
 	std::unique_ptr<WiFiClient> wifi_client_;
 	std::unique_ptr<WebSocketClient> socket_client_;
 	
-
-
-
-	void perform_camera_test();
-	void on_image_captured(std::unique_ptr<uint8_t[]> data, size_t size);
 };

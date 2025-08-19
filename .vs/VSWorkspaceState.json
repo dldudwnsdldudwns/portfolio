@@ -6,7 +6,11 @@
     ]
   },
   "ExpandedNodes": [
-    ""
+    "",
+    "\\main",
+    "\\main\\connection",
+    "\\out"
   ],
+  "SelectedNode": "\\main\\connection\\websocket_client.hpp",
   "PreviewInSolutionExplorer": false
 }
