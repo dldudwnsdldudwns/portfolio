@@ -42,6 +42,7 @@ class WebSocketClient
 		{
 		}
 	};
+	bool send_text_now(const std::string& text);
 
 	explicit WebSocketClient(const Config& config, std::function<bool()> is_wifi_available);
 	~WebSocketClient();
@@ -76,4 +77,6 @@ class WebSocketClient
 
 	bool send_text(std::string text);
 	void async_send_binary(std::unique_ptr<uint8_t[]> data, size_t size);
+
+
 };

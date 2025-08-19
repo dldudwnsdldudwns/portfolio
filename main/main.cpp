@@ -81,6 +81,10 @@ static float prev_y = 0.0f, last_y = 0.0f;
 static float last_peak_ms = -1.0f;
 static float noise_ma = 0.0f;
 static uint32_t sample_idx = 0;  // 샘플 시간축(버스트 영향 제거)
+
+
+static std::function<void(float, const char*, uint32_t)> g_emit_bpm;
+
 // I2C 유틸
 
 bool SolicareDevice::initialize()
@@ -123,9 +127,45 @@ void SolicareDevice::run()
     ESP_LOGI(TAG, "🌐 Attempting to connect to WebSocket...");
     socket_client_->async_connect();
     socket_client_->start_sender_task();
+    g_emit_bpm = [this](float bpm, const char* status, uint32_t t_ms) {
+        this->send_bpm_json(bpm, status, t_ms);
+        };
 
+
+}void SolicareDevice::send_bpm_json(float bpm, const char* status, uint32_t t_ms) {
+    if (!socket_client_) {
+        ESP_LOGW(TAG, "WebSocket client not ready");
+        return;
+    }
+    if (!socket_client_->is_available()) {
+        ESP_LOGW(TAG, "WebSocket not connected, skip send");
+        return;
+    }
+
+        // 반드시 배열로 선언
+    char json[192];
+
+    // JSON 문자열에서 쌍따옴표는 \" 로 이스케이프
+    // 공백이나 % s 같은 오탈자 없이 정확히 작성
+    int n = snprintf(json, sizeof(json),
+        "{\"device\":\"%s\",\"bpm\":%.1f,\"timestamp_ms\":%u,\"status\":\"%s\"}",
+        config_.device_name.c_str(),
+        bpm,
+        (unsigned)t_ms,
+        status);
+    if (n < 0 || n >= (int)sizeof(json)) {
+        ESP_LOGW(TAG, "JSON truncated or format error");
+        return;
+    }
+
+    // std::string(json)은 char*를 받으므로 위처럼 배열로 선언한 것이 필수
+    if (socket_client_->send_text_now(std::string(json))) {
+        ESP_LOGI(TAG, "Sent JSON: %s", json);
+    }
+    else {
+        ESP_LOGW(TAG, "Failed to send JSON");
+    }
 }
-
 
 esp_err_t i2c_init() {
     i2c_config_t cfg;
@@ -246,13 +286,15 @@ static void reset_filter_states(void) {
 }
 // 샘플 처리: 샘플 인덱스 기반 시간(ms) 전달
 static void process_sample(uint32_t ir_raw, float t_ms) {
-    // 착용 판정
+    // 착용 판정 로직
     if (!worn) {
         if (ir_raw > IR_ON_THRESHOLD) {
             if (++on_cnt > STABLE_COUNT) {
                 worn = true; on_cnt = 0; off_cnt = 0;
                 reset_filter_states();
                 ESP_LOGI(TAG, "Finger ON");
+                // 필요하면 ON 상태 알림만 보낼 수도 있음:
+                // if (g_emit_bpm) g_emit_bpm(0.0f, "ON", (uint32_t)t_ms);
             }
         }
         else {
@@ -265,6 +307,8 @@ static void process_sample(uint32_t ir_raw, float t_ms) {
             if (++off_cnt > STABLE_COUNT) {
                 worn = false; off_cnt = 0; on_cnt = 0;
                 ESP_LOGW(TAG, "Finger OFF");
+                // OFF면 0 BPM 전송
+                if (g_emit_bpm) g_emit_bpm(0.0f, "OFF", (uint32_t)t_ms);
                 return;
             }
         }
@@ -272,13 +316,18 @@ static void process_sample(uint32_t ir_raw, float t_ms) {
             off_cnt = 0;
         }
     }
+
+    // 신호 처리
     float x = (float)ir_raw;
     x = dc_remove(x);
     float y = biquad_bp(x);
     float abs_y = fabsf(y);
-    // 임계 스케일을 1.0부터 시작해 너무 낮게/높게 튀는 걸 방지
+
+    // 적응 임계값
     noise_ma = 0.97f * noise_ma + 0.03f * abs_y;
     float thr = fmaxf(0.05f, 1.0f * noise_ma);
+
+    // 피크 검출
     if (prev_y < last_y && last_y >= y && last_y > thr) {
         if (last_peak_ms < 0.0f) {
             last_peak_ms = t_ms;
@@ -291,6 +340,8 @@ static void process_sample(uint32_t ir_raw, float t_ms) {
                 float hr_s = smooth_hr(hr);
                 if (hr_s >= MIN_BPM && hr_s <= MAX_BPM) {
                     ESP_LOGI(TAG, "Heart Rate: %.1f BPM", hr_s);
+                    // 유효 HR 전송 (착용 중이므로 "ON")
+                    if (g_emit_bpm) g_emit_bpm(hr_s, "ON", (uint32_t)t_ms);
                 }
                 else {
                     ESP_LOGW(TAG, "HR out of range: %.1f BPM (raw=%.1f)", hr_s, hr);
@@ -298,6 +349,7 @@ static void process_sample(uint32_t ir_raw, float t_ms) {
             }
         }
     }
+
     prev_y = last_y;
     last_y = y;
 }

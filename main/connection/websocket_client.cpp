@@ -306,3 +306,8 @@ void WebSocketClient::async_send_binary(std::unique_ptr<uint8_t[]> data, size_t 
 
     xTaskCreatePinnedToCore(send_task, "ws_send_task", 8192, param, 5, nullptr, 0);
 }
+
+bool WebSocketClient::send_text_now(const std::string& text) {
+    if (!client_ || !esp_websocket_client_is_connected(client_)) return false;
+    return esp_websocket_client_send_text(client_, text.c_str(), text.size(), portMAX_DELAY) > 0;
+}
