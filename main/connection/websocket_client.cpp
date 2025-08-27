@@ -308,7 +308,14 @@ void WebSocketClient::async_send_binary(std::unique_ptr<uint8_t[]> data, size_t 
 }
 
 bool WebSocketClient::send_text_now(const std::string& text) {
-    if (!client_ || !esp_websocket_client_is_connected(client_)) return false;
-    return esp_websocket_client_send_text(client_, text.
-        (), text.size(), portMAX_DELAY) > 0;
+    if (!client_ || !esp_websocket_client_is_connected(client_)) {
+        return false;
+    }
+    int sent = esp_websocket_client_send_text(
+        client_,
+        text.c_str(),                 // 여기!
+        static_cast<int>(text.size()),
+        portMAX_DELAY
+    );
+    return sent > 0;
 }

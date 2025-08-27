@@ -1,3 +1,39 @@
-build/
+# ESP-IDF Build Output #
+# 빌드 결과물은 소스코드가 아니므로 반드시 제외합니다.
+/build/
 
-sdk.config.old
+# Managed Dependencies #
+# idf.py가 다운로드하는 의존성 라이브러리입니다.
+/managed_components/
+
+# Configuration Backups #
+# menuconfig 실행 시 생성되는 설정 백업 파일입니다.
+/sdkconfig.old
+/sdkconfig.bak
+
+# Common IDE and Editor Files #
+# 각 개발자의 로컬 개발 환경 설정은 공유하지 않습니다.
+# Visual Studio Code
+.vscode/
+# Eclipse
+.project
+.cproject
+.settings/
+# JetBrains (CLion, etc.)
+.idea/
+
+# Other Editor/System Files #
+# Vim, Emacs 등의 임시 파일 및 시스템 생성 파일입니다.
+*.swp
+*~
+*.bak
+*.tmp
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Visual Studio temporary files
+.vs/
