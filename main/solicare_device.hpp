@@ -17,9 +17,9 @@ extern "C"
 #define DEFAULT_DEVICE_NAME "max30102"
 
 // WiFi and Network Settings
-#define DEFAULT_WIFI_SSID "KT_GiGA_2G_A95E"
-#define DEFAULT_WIFI_PASSWORD "5ce41fb237"
-#define DEFAULT_SOCKET_SERVER_IP "172.30.1.48"
+#define DEFAULT_WIFI_SSID "1234"
+#define DEFAULT_WIFI_PASSWORD "12345678"
+#define DEFAULT_SOCKET_SERVER_IP "192.168.14.235"
 #define DEFAULT_SOCKET_SERVER_PORT 8080
 
 class SolicareDevice
@@ -41,7 +41,7 @@ class SolicareDevice
 		}
 	};
 
-	void send_bpm_json(float bpm, float voltage, const char* status, uint32_t t_ms);
+	void send_bpm_json(float bpm, float temp, float hum, float voltage, const char* status, uint32_t t_ms);
 
 	explicit SolicareDevice(const Config& config = Config{}) : config_(config)
 	{

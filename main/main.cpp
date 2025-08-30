@@ -56,6 +56,16 @@
 #define HR_SMOOTH_N 5
 #define MA_N 100
 
+
+
+// AHT21B Sensor Address and Commands
+#define AHT21B_ADDR 0x38    // 디바이스 주소
+#define AHT21B_CMD_GET_STATUS     0x71     // 상태 워드 읽기 명령어
+#define AHT21B_CMD_TRIGGER_MEAS   0xAC     // 측정 트리거 명령어
+#define AHT21B_CMD_PARAM_BYTE1    0x33
+#define AHT21B_CMD_PARAM_BYTE2    0x00
+
+
 static const float a_bp[9] = { 1.0f, -1.5610180758007182f, 0.6413515380575631f };
 static const float b_bp[9] = { 0.020083365564211235f, 0.0f, -0.020083365564211235f };
 
@@ -75,6 +85,48 @@ static float last_peak_ms = -1.0f;
 static float noise_ma = 0.0f;
 static uint32_t sample_idx = 0;
 static std::function<void(float, const char*, uint32_t)> g_emit_bpm;
+// ========= AHT21B Sensor Functions (added) =========
+static bool aht21b_check_and_init() {
+    vTaskDelay(pdMS_TO_TICKS(100)); // Power-on delay
+    uint8_t status;
+    const uint8_t cmd_buf[] = { 0x71 };
+    // i2c_master_write_read_device is more efficient for this
+    esp_err_t err = i2c_master_write_read_device(I2C_NUM, AHT21B_ADDR, cmd_buf, 1, &status, 1, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "AHT21B not found or comm error: %s", esp_err_to_name(err));
+        return false;
+    }
+    if ((status & 0x18) != 0x18) {
+        ESP_LOGW(TAG, "AHT21B not calibrated! Status: 0x%02X", status);
+    }
+    else {
+        ESP_LOGI(TAG, "AHT21B calibration OK. Status: 0x%02X", status);
+    }
+    return true;
+}
+
+static bool read_aht21b_data(float& temperature, float& humidity) {
+    const uint8_t trigger_cmd[] = { 0xAC, 0x33, 0x00 };
+    esp_err_t err = i2c_master_write_to_device(I2C_NUM, AHT21B_ADDR, trigger_cmd, sizeof(trigger_cmd), pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+    if (err != ESP_OK) return false;
+
+    vTaskDelay(pdMS_TO_TICKS(100)); // Wait for measurement
+
+    uint8_t read_buf[7] = { 0 };
+    err = i2c_master_read_from_device(I2C_NUM, AHT21B_ADDR, read_buf, sizeof(read_buf), pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+    if (err != ESP_OK || (read_buf[0] & 0x80)) { // Check for error or busy flag
+        return false;
+    }
+
+    uint32_t raw_humidity = ((uint32_t)read_buf[1] << 12) | ((uint32_t)read_buf[2] << 4) | (read_buf[3] >> 4);
+    uint32_t raw_temperature = (((uint32_t)read_buf[3] & 0x0F) << 16) | ((uint32_t)read_buf[4] << 8) | read_buf[5];
+
+    humidity = (float)raw_humidity * 100.0f / (1 << 20);
+    temperature = (float)raw_temperature * 200.0f / (1 << 20) - 50.0f;
+    return true;
+}
+
 
 // ========= Battery ADC (integrated from voltagesen.cpp) =========
 #include "esp_adc/adc_oneshot.h"
@@ -365,42 +417,47 @@ static void int_task(void* arg) {
 }
 
 // ========= SolicareDevice changes: send JSON with voltage =========
-void SolicareDevice::send_bpm_json(float bpm, float voltage, const char* status, uint32_t t_ms) {
-    if (!socket_client_) { ESP_LOGW(TAG, "WebSocket client not ready"); return; } // OK
-    if (!socket_client_->is_available()) { ESP_LOGW(TAG, "WebSocket not connected, skip send"); return; } // OK
+void SolicareDevice::send_bpm_json(float bpm, float temp, float hum, float voltage, const char* status, uint32_t t_ms) {
+    if (!socket_client_) { ESP_LOGW(TAG, "WebSocket client not ready"); return; }
+    if (!socket_client_->is_available()) { ESP_LOGW(TAG, "WebSocket not connected, skip send"); return; }
 
-    char json[192];
-
+    char json[256]; // 버퍼 크기를 넉넉하게 늘림
     int n = snprintf(json, sizeof(json),
-        "{\"device\":\"%s\",\"bpm\":%.1f,\"voltage\":%.3f,\"timestamp_ms\":%u,\"status\":\"%s\"}",
+        "{\"device\":\"%s\",\"bpm\":%.1f,\"temperature\":%.2f,\"humidity\":%.2f,\"voltage\":%.3f,\"timestamp_ms\":%u,\"status\":\"%s\"}",
         config_.device_name.c_str(),
         bpm,
+        temp,      // 온도 추가
+        hum,       // 습도 추가
         voltage,
         (unsigned)t_ms,
         status);
+
     if (n < 0 || n >= (int)sizeof(json)) {
         ESP_LOGW(TAG, "JSON truncated or format error");
         return;
     }
-    std::string json_str(json, n); // 안전하게 길이 지정 생성
-    if (socket_client_->send_text_now(json_str)) {
-        ESP_LOGI(TAG, "Sent JSON: %s", json_str.c_str());
-    }
-    else {
-        ESP_LOGW(TAG, "Failed to send JSON");
-    }
+    std::string json_str(json, n);
+    socket_client_->send_text_now(json_str);
 }
-
-
 
 extern "C" void app_main(void) {
     ESP_LOGI(TAG, "🚀 Starting Solicare Application");
     ESP_LOGI(TAG, "═══════════════════════════════════════");
 
-    SolicareDevice::Config config;
-    ESP_LOGI(TAG, "📋 WiFi SSID: %s", config.wifi_ssid.c_str());
-    ESP_LOGI(TAG, " 🌐 Server: %s:%d", config.socket_server_ip.c_str(), config.socket_server_port);
+    // 1. I2C 버스 초기화 (중앙 관리)
+    i2c_config_t i2c_conf = {};
+    i2c_conf.mode = I2C_MODE_MASTER;
+    i2c_conf.sda_io_num = SDA_PIN;
+    i2c_conf.scl_io_num = SCL_PIN;
+    i2c_conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+    i2c_conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+    i2c_conf.master.clk_speed = I2C_FREQ;
+    ESP_ERROR_CHECK(i2c_param_config(I2C_NUM, &i2c_conf));
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM, i2c_conf.mode, 0, 0, 0));
+    ESP_LOGI(TAG, "I2C Master Bus initialized successfully for all sensors");
 
+    // 2. 객체 생성 및 초기화
+    SolicareDevice::Config config;
     SolicareDevice device(config);
     if (!device.initialize()) {
         ESP_LOGE(TAG, "❌ Failed to initialize application");
@@ -408,10 +465,11 @@ extern "C" void app_main(void) {
     }
     device.run();
 
-    if (i2c_init() != ESP_OK) {
-        ESP_LOGE(TAG, "I2C init failed");
-        return;
-    }
+    // 3. 센서 초기화
+    aht21b_check_and_init(); // 온습도 센서 초기화 추가
+    battery_adc_init_once(); // 배터리 ADC 초기화
+
+    // 4. MAX30102 센서 설정 및 인터럽트 시작 (기존 i2c_init() 호출은 제거됨)
     vTaskDelay(pdMS_TO_TICKS(10));
     clear_interrupt_status();
     fifo_reset();
@@ -422,33 +480,26 @@ extern "C" void app_main(void) {
     write_reg(REG_LED1, LED_STD);
     write_reg(REG_LED2, LED_STD);
     write_reg(REG_MODE, MODE_HEART);
-
     write_reg(REG_INTR_ENABLE_1, 0x80);
     write_reg(REG_INTR_ENABLE_2, 0x00);
     vTaskDelay(pdMS_TO_TICKS(50));
 
-    gpio_config_t io_conf;
-    memset(&io_conf, 0, sizeof(io_conf));
+    gpio_config_t io_conf = {};
     io_conf.pin_bit_mask = INT_PIN_SEL;
     io_conf.mode = GPIO_MODE_INPUT;
-    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.intr_type = GPIO_INTR_NEGEDGE;
     ESP_ERROR_CHECK(gpio_config(&io_conf));
-    int init_lvl = gpio_get_level(MAX30102_INT_GPIO);
-    ESP_LOGI(TAG, "INT GPIO%d level=%d (idle should be 1)", (int)MAX30102_INT_GPIO, init_lvl);
 
     s_int_queue = xQueueCreate(16, sizeof(uint32_t));
-    if (!s_int_queue) { ESP_LOGE(TAG, "xQueueCreate failed"); return; }
-    if (xTaskCreate(int_task, "max30102_int_task", 4096, NULL, 10, NULL) != pdPASS) {
-        ESP_LOGE(TAG, "xTaskCreate failed"); return;
-    }
-    ESP_ERROR_CHECK(gpio_install_isr_service(0));
-    ESP_ERROR_CHECK(gpio_isr_handler_add(MAX30102_INT_GPIO, int_isr, (void*)MAX30102_INT_GPIO));
-    ESP_LOGI(TAG, "Ready (BURST=%d, SR=%.0f sps, SMP_AVE=8, A_FULL=7)", BURST_SZ, SR_HZ);
+    xTaskCreate(int_task, "max30102_int_task", 4096, NULL, 10, NULL);
+    gpio_install_isr_service(0);
+    gpio_isr_handler_add(MAX30102_INT_GPIO, int_isr, (void*)MAX30102_INT_GPIO);
+
+    ESP_LOGI(TAG, "MAX30102 sampler started. Waiting for interrupts...");
 
     while (1) vTaskDelay(pdMS_TO_TICKS(1000));
 }
+
 
 // ========= SolicareDevice::initialize / run definitions =========
 bool SolicareDevice::initialize() {
@@ -475,19 +526,27 @@ bool SolicareDevice::initialize() {
 }
 
 void SolicareDevice::run() {
-    ESP_LOGI(TAG, "=== Starting Solicare Device Runtime ==="); // [2]
-    wifi_client_->try_connect();                                // [3]
-    socket_client_->async_connect();                            // [1]
-    socket_client_->start_sender_task();                        // [1]
+    ESP_LOGI(TAG, "=== Starting Solicare Device Runtime ===");
+    wifi_client_->try_connect();
+    socket_client_->async_connect();
+    socket_client_->start_sender_task();
 
+    // 콜백 함수 내부 로직이 수정되었습니다.
     g_emit_bpm = [this](float bpm, const char* status, uint32_t t_ms) {
         float vbatt = 0.0f;
-        bool ok = read_battery_voltage(vbatt);                  // [4]
+        float temp = -99.0f; // 에러 시 기본값
+        float hum = -99.0f;
+
+        // 인터럽트 발생 시, 모든 센서 값을 즉시 읽어옵니다.
+        read_aht21b_data(temp, hum);
+        bool ok = read_battery_voltage(vbatt);
         if (!ok) {
             vbatt = 0.0f;
-            ESP_LOGW(TAG, "Battery read failed, sending voltage=0.0V"); // [2]
+            ESP_LOGW(TAG, "Battery read failed, sending voltage=0.0V");
         }
-        this->send_bpm_json(bpm, vbatt, status, t_ms); // 변경된 시그니처 호출 [2]
+
+        // 모든 데이터를 취합하여 확장된 JSON 함수로 전송합니다.
+        this->send_bpm_json(bpm, temp, hum, vbatt, status, t_ms);
         };
 }
 
