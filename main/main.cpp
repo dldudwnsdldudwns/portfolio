@@ -478,6 +478,7 @@ void SolicareDevice::send_bpm_json(float bpm, float temp, float hum,
     return;
   }
 
+
   char json[256]; // 버퍼 크기를 넉넉하게 늘림
   int n = snprintf(
       json, sizeof(json),
@@ -487,6 +488,7 @@ void SolicareDevice::send_bpm_json(float bpm, float temp, float hum,
       temp, // 온도 추가
       hum,  // 습도 추가
       voltage, (unsigned)t_ms, status);
+
 
   if (n < 0 || n >= (int)sizeof(json)) {
     ESP_LOGW(TAG, "JSON truncated or format error");
@@ -608,4 +610,5 @@ void SolicareDevice::run() {
     // 모든 데이터를 취합하여 확장된 JSON 함수로 전송합니다.
     this->send_bpm_json(bpm, temp, hum, vbatt, status, t_ms);
   };
+
 }

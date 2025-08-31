@@ -18,8 +18,10 @@ extern "C" {
 // WiFi and Network Settings
 #define DEFAULT_WIFI_SSID "SOLICARE"
 #define DEFAULT_WIFI_PASSWORD "password123"
+
 #define DEFAULT_SOCKET_SERVER_IP "192.168.137.1"
 #define DEFAULT_SOCKET_SERVER_PORT 3000
+
 
 class SolicareDevice {
 public:
