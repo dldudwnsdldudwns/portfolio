@@ -1,3 +1,5 @@
+`include "debug.v"
+
 module bnorm_quant_act(
     clk,
     resetn,
@@ -73,8 +75,9 @@ module bnorm_quant_act(
 // Bias shift
 //-------------------------------------------------
     bias_shifter #(
-        .DATA_BITS (DATA_BITS+PARAM_BITS),.OUT_DATA_BITS(DATA_BITS),
-        .SHIFT_W (5)
+        .DATA_BITS (DATA_BITS+PARAM_BITS),
+        .SHIFT_W (5),
+		.OUT_DATA_BITS(DATA_BITS)
     )
     u_bias_shift (
         .d_in (acc_mult),
@@ -114,8 +117,13 @@ module bnorm_quant_act(
     always @(posedge clk or negedge resetn)
         if(!resetn) 
 			accum_final <= 'h0;
-        else        //accum_final <= acc_mean;
-			accum_final <= acc_quant;			// Fix a bug for linear
+	`ifdef GENERATE_OUTPUT_ERRROR
+        else       
+			accum_final <= acc_mean;		// Wrong
+	`else
+		else        
+			accum_final <= acc_quant;		// Correct
+	`endif
 //-------------------------------------------------
 // Delays and valid signals	
 //-------------------------------------------------    
