@@ -1,6 +1,6 @@
+`timescale 1ns / 1ps
 `include "amba_ahb_h.v"
 `include "map.v"
-`include "debug.v"
 module cnn_accel #(
 	parameter W_ADDR = 32,
 	parameter W_DATA = 32,
@@ -33,7 +33,7 @@ module cnn_accel #(
 	out_sl_HREADY,				
 	out_sl_HRESP,
 	out_sl_HRDATA,
-	
+
 	// Master port 1: Input image
 	//AHB transactor signals
 	HREADY,
@@ -47,30 +47,24 @@ module cnn_accel #(
 	out_HMASTLOCK,
 	out_HADDR,
 	out_HWRITE,
-	out_HWDATA,
-
-	//Output pixel
-	out_pixel,
-	out_valid	
+	out_HWDATA		
 );
 //CLOCK
-input 	HCLK;
-input 	HRESETn;
+input HCLK;
+input HRESETn;
 //input signals of control port(slave)
-input 					sl_HREADY;
-input 					sl_HSEL;
-input [`W_TRANS-1	:0] sl_HTRANS;
-input [`W_BURST-1	:0] sl_HBURST;
-input [`W_SIZE-1	:0] sl_HSIZE;
-input [W_ADDR-1		:0] sl_HADDR;
-input 					sl_HWRITE;
-input [W_DATA-1		:0] sl_HWDATA;
+input sl_HREADY;
+input sl_HSEL;
+input [`W_TRANS-1:0] sl_HTRANS;
+input [`W_BURST-1:0] sl_HBURST;
+input [`W_SIZE-1:0] sl_HSIZE;
+input [W_ADDR-1:0] sl_HADDR;
+input sl_HWRITE;
+input [W_DATA-1:0] sl_HWDATA;
 //output signals of control port(slave)
-output 					out_sl_HREADY;				
-output [`W_RESP-1   :0] out_sl_HRESP;
+output out_sl_HREADY;				
+output [`W_RESP-1:0] out_sl_HRESP;
 output reg [W_DATA-1:0] out_sl_HRDATA;
-output     [31      :0] out_pixel;
-output 					out_valid;
 
 // Master: Input image
 //AHB transactor signals
@@ -93,31 +87,30 @@ parameter Ti = 16;	// Each CONV kernel do 16 multipliers at the same time
 //parameter To = 4;	// Run 4 CONV kernels at the same time
 parameter To = 16;	// Run 16 CONV kernels at the same time
 
-parameter WI 				= 8;
-parameter N  				= 16;
-parameter WN 				= $clog2(N);
-parameter WO 				= 2*(WI+1) + WN;
-parameter PARAM_BITS 		= 16;
-parameter WEIGHT_BITS 		= 8;
-parameter ACT_BITS			= 8;
-parameter DATA_BITS 		= WO;
+parameter WI = 8;
+parameter N  = 16;
+parameter WN = $clog2(N);
+parameter WO = 2*(WI+1) + WN;
+parameter PARAM_BITS 	= 16;
+parameter WEIGHT_BITS 	= 8;
+parameter ACT_BITS		= 8;
+parameter DATA_BITS 	= WO;
 localparam CONV3x3_DELAY 	= 9;
 localparam CONV3x3_DELAY_W 	= 4;
 
-localparam FRAME_SIZE 		= WIDTH * HEIGHT;
-localparam FRAME_SIZE_W 	= $clog2(FRAME_SIZE);
-localparam W_SIZE  			= 12;					// Max 4K QHD (3840x1920).
-localparam W_FRAME_SIZE  	= 2 * W_SIZE + 1;	// Max 4K QHD (3840x1920).
-localparam W_DELAY 			= 12;
+localparam FRAME_SIZE = WIDTH * HEIGHT;
+localparam FRAME_SIZE_W = $clog2(FRAME_SIZE);
+localparam W_SIZE  = 12;					// Max 4K QHD (3840x1920).
+localparam W_FRAME_SIZE  = 2 * W_SIZE + 1;	// Max 4K QHD (3840x1920).
+localparam W_DELAY = 12;
 
 // Block ram for weights
-parameter N_DELAY 			= 1;	
-parameter N_LAYER 			= 3;
-parameter N_CELL  			= N_LAYER * (Ti*To*9)/N;
-parameter N_CELL_PARAM		= N_LAYER * (To);
-parameter W_CELL 			= $clog2(N_CELL);
-parameter W_CELL_PARAM 		= $clog2(N_CELL_PARAM);	
-
+parameter N_DELAY 	    = 1;		
+parameter N_LAYER 		= 3;
+parameter N_CELL  		= N_LAYER * (Ti*To*9)/N;
+parameter N_CELL_PARAM	= N_LAYER * (To);
+parameter W_CELL 		= $clog2(N_CELL);
+parameter W_CELL_PARAM 	= $clog2(N_CELL_PARAM);	
 parameter EN_LOAD_INIT_FILE = 1'b1; // Initialize weights, scales, biases from files			
 // AHB signals			
 localparam N_REGS = 10;
@@ -360,27 +353,27 @@ end
 // FSM
 //-------------------------------------------------
 cnn_fsm u_cnn_fsm (
-.clk				(clk				),
-.rstn				(rstn				),
+.clk(clk),
+.rstn(rstn),
 // Inputs
-.q_is_conv3x3		(q_is_conv3x3		),
-.q_width			(q_width			),
-.q_height			(q_height			),
-.q_start_up_delay	(q_start_up_delay	),
-.q_hsync_delay		(q_hsync_delay		),
-.q_frame_size		(q_frame_size		),
-.q_start			(q_start			),
+.q_is_conv3x3(q_is_conv3x3),
+.q_width(q_width),
+.q_height(q_height),
+.q_start_up_delay(q_start_up_delay),
+.q_hsync_delay(q_hsync_delay),
+.q_frame_size(q_frame_size),
+.q_start(q_start),
 //output
-.o_ctrl_vsync_run	(ctrl_vsync_run		),
-.o_ctrl_vsync_cnt	(ctrl_vsync_cnt		),
-.o_ctrl_hsync_run	(ctrl_hsync_run		),
-.o_ctrl_hsync_cnt	(ctrl_hsync_cnt		),
-.o_ctrl_data_run	(ctrl_data_run		),
-.o_row				(row				),
-.o_col				(col				),
-.o_data_count		(data_count			),
-.o_end_frame		(end_frame		    ),
-.o_pix_idx			(pix_idx			)
+.o_ctrl_vsync_run(ctrl_vsync_run),
+.o_ctrl_vsync_cnt(ctrl_vsync_cnt),
+.o_ctrl_hsync_run(ctrl_hsync_run),
+.o_ctrl_hsync_cnt(ctrl_hsync_cnt),
+.o_ctrl_data_run(ctrl_data_run),
+.o_row(row),
+.o_col(col),
+.o_data_count(data_count),
+.o_end_frame(end_frame),
+.o_pix_idx(pix_idx)
 );
 
 //-------------------------------------------------------------------------------
@@ -396,10 +389,11 @@ always@(posedge clk, negedge rstn)begin
 	end
 	else begin
 		if(data_vld_o_ld) begin
-			if(in_pixel_count == q_frame_size-1)
+			// Insert your code
+			if(in_pixel_count == q_frame_size-3)
 				in_pixel_count <= 0;
 			else 
-				in_pixel_count <= in_pixel_count + 1;
+				in_pixel_count <= in_pixel_count + 4;
 		end
 	end
 end
@@ -412,7 +406,14 @@ always@(posedge clk, negedge rstn)begin
 	end
 	else begin
 		if(data_vld_o_ld) begin
+			// Insert your code
 			in_img[in_pixel_count] <= data_o_ld[7:0];
+			
+			in_img[in_pixel_count+1] <= data_o_ld[15:8];
+			
+			in_img[in_pixel_count+2] <= data_o_ld[23:16];
+			
+			in_img[in_pixel_count+3] <= data_o_ld[31:24];
 		end
 	end
 end
@@ -498,30 +499,30 @@ end
  dma2buf
  u_dma2buf (
 	//input bus signals
-	.HREADY			(HREADY			),
-	.HRESP 			(HRESP			),
-	.HRDATA			(HRDATA			),
+	.HREADY(HREADY),
+	.HRESP (HRESP),
+	.HRDATA(HRDATA),
 	// output bus signals
-	.out_HADDR		(out_HADDR		),
-	.out_HWDATA		(out_HWDATA		),
-	.out_HWRITE		(out_HWRITE		),
-	.out_HSIZE		(out_HSIZE		),
-	.out_HBURST		(out_HBURST		),
-	.out_HTRANS		(out_HTRANS		),
-	.out_HMASTLOCK	(out_HMASTLOCK	),
-	.out_HPROT		(out_HPROT		),	
+	.out_HADDR	(out_HADDR),
+	.out_HWDATA	(out_HWDATA),
+	.out_HWRITE	(out_HWRITE),
+	.out_HSIZE	(out_HSIZE),
+	.out_HBURST	(out_HBURST),
+	.out_HTRANS	(out_HTRANS),
+	.out_HMASTLOCK(out_HMASTLOCK),
+	.out_HPROT(out_HPROT),	
 	// input from a buffer controller
-	.start_dma  	(start_dma_ld	),
-	.num_trans  	(num_trans_ld	),
-	.start_addr 	(start_addr_ld	),
+	.start_dma  (start_dma_ld),
+	.num_trans  (num_trans_ld),
+	.start_addr (start_addr_ld),
 	// output to a buffer
-	.data_o			(data_o_ld		),
-	.data_vld_o		(data_vld_o_ld	),
-	.data_last_o	(data_last_o_ld	),
-	.data_cnt_o		(data_cnt_o		),
+	.data_o		(data_o_ld),
+	.data_vld_o	(data_vld_o_ld),
+	.data_last_o(data_last_o_ld),
+	.data_cnt_o(data_cnt_o),
 	// global signals
-	.clk   			(HCLK			),
-	.resetn			(HRESETn		)
+	.clk   (HCLK),
+	.resetn(HRESETn)
 );
 
 ////-------------------------------------------------------------------------------
@@ -595,6 +596,7 @@ always@(*) begin
 		end
 	end
 end
+reg [W_SIZE-1:0] row_d, col_d;
 
 assign is_first_row = (row==0)?1'b1:1'b0;
 assign is_last_row  = (row==q_height-1)?1'b1:1'b0;
@@ -609,6 +611,8 @@ always@(posedge clk, negedge rstn)begin
 		is_last_col_d  	<= 1'b0; 
 		ctrl_data_run_d <= 1'b0;
 		pix_idx_d		<= 4'd0;
+		row_d <= 0;
+        col_d <= 0;
 	end
 	else begin
 		is_first_row_d  <= is_first_row; 
@@ -617,24 +621,30 @@ always@(posedge clk, negedge rstn)begin
 		is_last_col_d  	<= is_last_col; 	
 		ctrl_data_run_d <= ctrl_data_run;
 		pix_idx_d       <= pix_idx;
+		row_d <= row;
+        col_d <= col;
 	end
 end
+
+
+
 always@(*) begin	
 	vld_i  = 0;
 	din    = 0;
 	win    = 0;
 	// First layer
-	if(q_is_first_layer) begin
+	if(q_is_first_layer && ctrl_data_run_d) begin
+		
 		vld_i = ctrl_data_run;
-		din[0*WI+:WI] = (is_first_row | is_first_col)? 8'd0: in_img[data_count - q_width - 1];
-		din[1*WI+:WI] = (is_first_row               )? 8'd0: in_img[data_count - q_width    ];
-		din[2*WI+:WI] = (is_first_row | is_last_col )? 8'd0: in_img[data_count - q_width + 1];
-		din[3*WI+:WI] = (				is_first_col)? 8'd0: in_img[data_count           - 1];
-		din[4*WI+:WI] = 								     in_img[data_count              ];
-		din[5*WI+:WI] = (               is_last_col )? 8'd0: in_img[data_count           + 1];
-		din[6*WI+:WI] = (is_last_row  | is_first_col)? 8'd0: in_img[data_count + q_width - 1];
-		din[7*WI+:WI] = (is_last_row  		        )? 8'd0: in_img[data_count + q_width    ];
-		din[8*WI+:WI] = (is_last_row  | is_last_col )? 8'd0: in_img[data_count + q_width + 1];		
+		din[0*WI+:WI] = (is_first_row_d | is_first_col_d)? 8'd0: in_img[128*(row_d-1) + (col_d-1)];
+		din[1*WI+:WI] = (is_first_row_d               )? 8'd0: in_img[128*(row_d-1) + (col_d)];
+		din[2*WI+:WI] = (is_first_row_d | is_last_col_d )? 8'd0: in_img[128*(row_d-1) + (col_d+1)];
+		din[3*WI+:WI] = (				is_first_col_d)? 8'd0: in_img[128*(row_d) + (col_d-1)];
+		din[4*WI+:WI] = 								     in_img[128*(row_d) + (col_d)];
+		din[5*WI+:WI] = (               is_last_col_d )? 8'd0: in_img[128*(row_d) + (col_d+1)];
+		din[6*WI+:WI] = (is_last_row_d  | is_first_col_d)? 8'd0: in_img[128*(row_d+1) + (col_d-1)];
+		din[7*WI+:WI] = (is_last_row_d  		        )? 8'd0: in_img[128*(row_d+1) + (col_d)];
+		din[8*WI+:WI] = (is_last_row_d  | is_last_col_d )? 8'd0: in_img[128*(row_d+1) + (col_d+1)];		
 		win   = win_buf[0+:To*Ti*WI];
 	end
 	else begin
@@ -760,36 +770,36 @@ spram #(.INIT_FILE("input_data/all_conv_weights.hex"),
 		.EN_LOAD_INIT_FILE(EN_LOAD_INIT_FILE),
 		.W_DATA(Ti*WI),.W_WORD(W_CELL),.N_WORD(N_CELL))
 u_buf_weight(
-    .clk (clk            		), 
-    .en  (weight_buf_en  		), 
-    .addr(weight_buf_addr		), 
-    .din (/*unused*/     		), 
-    .we  (weight_buf_we  		), 
-    .dout(weight_buf_dout		)  
+    .clk (clk            ), 
+    .en  (weight_buf_en  ), 
+    .addr(weight_buf_addr), 
+    .din (/*unused*/     ), 
+    .we  (weight_buf_we  ), 
+    .dout(weight_buf_dout)  
 );
 // Bias buffer
 spram #(.INIT_FILE("input_data/all_conv_biases.hex"),
 		.EN_LOAD_INIT_FILE(EN_LOAD_INIT_FILE),
 		.W_DATA(PARAM_BITS),.W_WORD(W_CELL_PARAM),.N_WORD(N_CELL_PARAM))
 u_buf_bias(
-    .clk (clk                	), 
-    .en  (param_buf_en       	), 
-    .addr(param_buf_addr     	), 
-    .din (/*unused*/         	), 
-    .we  (param_buf_we       	), 
-    .dout(param_buf_dout_bias	)  
+    .clk (clk                ), 
+    .en  (param_buf_en       ), 
+    .addr(param_buf_addr     ), 
+    .din (/*unused*/         ), 
+    .we  (param_buf_we       ), 
+    .dout(param_buf_dout_bias)  
 );
 // Scale buffer
 spram #(.INIT_FILE("input_data/all_conv_scales.hex"),
 		.EN_LOAD_INIT_FILE(EN_LOAD_INIT_FILE),
 		.W_DATA(PARAM_BITS),.W_WORD(W_CELL_PARAM),.N_WORD(N_CELL_PARAM))
 u_buf_scale(
-    .clk (clk                 	), 
-    .en  (param_buf_en        	), 
-    .addr(param_buf_addr      	), 
-    .din (/*unused*/          	), 
-    .we  (param_buf_we        	), 
-    .dout(param_buf_dout_scale	)  
+    .clk (clk                 ), 
+    .en  (param_buf_en        ), 
+    .addr(param_buf_addr      ), 
+    .din (/*unused*/          ), 
+    .we  (param_buf_we        ), 
+    .dout(param_buf_dout_scale)  
 );
 //-------------------------------------------------------------------------------
 // Computing units
@@ -798,19 +808,19 @@ generate
     genvar i;
     for (i=0; i<To; i=i+1) begin: u_conv_kern
 		conv_kern u_conv_kern(
-		./*input 				 */clk			(clk								),
-		./*input 				 */rstn			(rstn								),
-		./*input 				 */is_last_layer(q_is_last_layer					),
-		./*input [PARAM_BITS-1:0]*/scale		(scale[(i*PARAM_BITS)+:PARAM_BITS]	),
-		./*input [PARAM_BITS-1:0]*/bias			(bias[(i*PARAM_BITS)+:PARAM_BITS]	),
-		./*input [2:0] 			 */act_shift	(q_act_shift						),
-		./*input [4:0] 			 */bias_shift	(q_bias_shift						),
-		./*input 				 */is_conv3x3	(q_is_conv3x3						),			//0: 1x1, 1:3x3
-		./*input 				 */vld_i		(vld_i								),
-		./*input [N*WI-1:0] 	 */win			(win[(i*Ti*WI)+:(Ti*WI)]			),
-		./*input [N*WI-1:0] 	 */din			(din								),
-		./*output [ACT_BITS-1:0] */acc_o		(acc_o[(i*ACT_BITS)+:ACT_BITS]		),
-		./*output 				 */vld_o		(vld_o[i]							)
+		./*input 				 */clk(clk),
+		./*input 				 */rstn(rstn),
+		./*input 				 */is_last_layer(q_is_last_layer),
+		./*input [PARAM_BITS-1:0]*/scale(scale[(i*PARAM_BITS)+:PARAM_BITS]),
+		./*input [PARAM_BITS-1:0]*/bias(bias[(i*PARAM_BITS)+:PARAM_BITS]),
+		./*input [2:0] 			 */act_shift(q_act_shift),
+		./*input [4:0] 			 */bias_shift(q_bias_shift),
+		./*input 				 */is_conv3x3(q_is_conv3x3),			//0: 1x1, 1:3x3
+		./*input 				 */vld_i(vld_i),
+		./*input [N*WI-1:0] 	 */win(win[(i*Ti*WI)+:(Ti*WI)]),
+		./*input [N*WI-1:0] 	 */din(din),
+		./*output [ACT_BITS-1:0] */acc_o(acc_o[(i*ACT_BITS)+:ACT_BITS]),
+		./*output 				 */vld_o(vld_o[i])
 		);	
     end
 endgenerate
@@ -818,59 +828,29 @@ endgenerate
 //-------------------------------------------------
 // Output buffers.
 //-------------------------------------------------
-`ifndef TEST_ONE_LAYER_ONLY
-	dpram #(.W_DATA(To*ACT_BITS), .W_WORD(FRAME_SIZE_W),.N_WORD(FRAME_SIZE))
-	u_fmap_buff_01(
-	   .clk   (clk   						),
-	   .ena   ((!out_buff_sel) & vld_o[0]	), 
-	   .wea   ((!out_buff_sel) & vld_o[0]	), 
-	   .addra (pixel_count   				), 
-	   .enb   (fmap_buf_enb01				),	
-	   .addrb (fmap_buf_addrb				), 
-	   .dia   (acc_o         				), 
-	   .dob   (fmap_buf_dob01				)  
-	);
+dpram #(.W_DATA(To*ACT_BITS), .W_WORD(FRAME_SIZE_W),.N_WORD(FRAME_SIZE))
+u_fmap_buff_01(
+   .clk   (clk   ),
+   .ena   ((!out_buff_sel) & vld_o[0]), 
+   .wea   ((!out_buff_sel) & vld_o[0]), 
+   .addra (pixel_count   ), 
+   .enb   (fmap_buf_enb01),	
+   .addrb (fmap_buf_addrb), 
+   .dia   (acc_o         ), 
+   .dob   (fmap_buf_dob01)  
+);
 
-	dpram #(.W_DATA(To*ACT_BITS), .W_WORD(FRAME_SIZE_W),.N_WORD(FRAME_SIZE))
-	u_fmap_buff_02(
-	   .clk   (clk   						),
-	   .ena   (out_buff_sel & vld_o[0]		), 
-	   .wea   (out_buff_sel & vld_o[0]		), 
-	   .addra (pixel_count   				), 
-	   .enb   (fmap_buf_enb02				),	
-	   .addrb (fmap_buf_addrb				), 
-	   .dia   (acc_o         				), 
-	   .dob   (fmap_buf_dob02				)  
-	);
-`else
-	//****************************************************************************************
-	// Configure a directory for your OWN targeting layer
-	//****************************************************************************************
-	dpram #(.FILENAME("out_sw/convout_L2.hex"),.W_DATA(To*ACT_BITS), .W_WORD(FRAME_SIZE_W),.N_WORD(FRAME_SIZE))
-	u_fmap_buff_01(
-	   .clk   (clk   						),
-	   .ena   ((!out_buff_sel) & vld_o[0]	), 
-	   .wea   ((!out_buff_sel) & vld_o[0]	), 
-	   .addra (pixel_count   				), 
-	   .enb   (fmap_buf_enb01				),	
-	   .addrb (fmap_buf_addrb				), 
-	   .dia   (acc_o         				), 
-	   .dob   (fmap_buf_dob01				)  
-	);
-
-	dpram #(.FILENAME("out_sw/convout_L2.hex"),.W_DATA(To*ACT_BITS), .W_WORD(FRAME_SIZE_W),.N_WORD(FRAME_SIZE))
-	u_fmap_buff_02(
-	   .clk   (clk   						),
-	   .ena   (out_buff_sel & vld_o[0]		), 
-	   .wea   (out_buff_sel & vld_o[0]		), 
-	   .addra (pixel_count   				), 
-	   .enb   (fmap_buf_enb02				),	
-	   .addrb (fmap_buf_addrb				), 
-	   .dia   (acc_o         				), 
-	   .dob   (fmap_buf_dob02				)  
-	);
-
-`endif 
+dpram #(.W_DATA(To*ACT_BITS), .W_WORD(FRAME_SIZE_W),.N_WORD(FRAME_SIZE))
+u_fmap_buff_02(
+   .clk   (clk   ),
+   .ena   (out_buff_sel & vld_o[0]), 
+   .wea   (out_buff_sel & vld_o[0]), 
+   .addra (pixel_count   ), 
+   .enb   (fmap_buf_enb02),	
+   .addrb (fmap_buf_addrb), 
+   .dia   (acc_o         ), 
+   .dob   (fmap_buf_dob02)  
+);
 //-------------------------------------------------
 // Update the output buffers.
 //-------------------------------------------------
@@ -899,21 +879,47 @@ always@(posedge clk, negedge rstn) begin
     end
 end
 
-//-------------------------------------------------------------------------------
-// Outputs
-//-------------------------------------------------------------------------------	
-// Currently, the engine outputs residual pixels. 
-// INSERT YOUR CODE to calculate the output pixels
-//{{{
-//assign out_pixel = {acc_o[3],acc_o[2],acc_o[1],acc_o[0]};		// NXT -- DEL
-assign out_pixel = acc_o[31:0];									// NXT ++ MOD
-assign out_valid = vld_o[0];				
-
-//}}}
-//-------------------------------------------------------------------------------
-// Debugging
-//-------------------------------------------------------------------------------
+//-------------------------------------------------
+// Image Writer
+//-------------------------------------------------
 // synopsys translate_off						 
+bmp_image_writer#(.WIDTH(WIDTH),.HEIGHT(HEIGHT),.OUTFILE(OUTFILE00))
+u_bmp_image_writer_00(
+./*input 			*/clk(clk),
+./*input 			*/rstn(rstn),
+./*input [WI-1:0] 	*/din(acc_o[0*ACT_BITS+:ACT_BITS]),
+./*input 			*/vld(vld_o[0] && q_is_last_layer),
+./*output reg 		*/frame_done(frame_done[0])
+);
+
+bmp_image_writer#(.WIDTH(WIDTH),.HEIGHT(HEIGHT),.OUTFILE(OUTFILE01))
+u_bmp_image_writer_01(
+./*input 			*/clk(clk),
+./*input 			*/rstn(rstn),
+./*input [WI-1:0] 	*/din(acc_o[1*ACT_BITS+:ACT_BITS]),
+./*input 			*/vld(vld_o[1] && q_is_last_layer),
+./*output reg 		*/frame_done(frame_done[1])
+);
+
+bmp_image_writer#(.WIDTH(WIDTH),.HEIGHT(HEIGHT),.OUTFILE(OUTFILE02))
+u_bmp_image_writer_02(
+./*input 			*/clk(clk),
+./*input 			*/rstn(rstn),
+./*input [WI-1:0] 	*/din(acc_o[2*ACT_BITS+:ACT_BITS]),
+./*input 			*/vld(vld_o[2] && q_is_last_layer),
+./*output reg 		*/frame_done(frame_done[2])
+);
+
+bmp_image_writer#(.WIDTH(WIDTH),.HEIGHT(HEIGHT),.OUTFILE(OUTFILE03))
+u_bmp_image_writer_03(
+./*input 			*/clk(clk),
+./*input 			*/rstn(rstn),
+./*input [WI-1:0] 	*/din(acc_o[3*ACT_BITS+:ACT_BITS]),
+./*input 			*/vld(vld_o[3] && q_is_last_layer),
+./*output reg 		*/frame_done(frame_done[3])
+);
+
+// Debugging
 integer fp_output_L01;
 integer fp_output_L02;
 integer fp_output_L03;
@@ -964,5 +970,5 @@ always @(posedge clk or negedge rstn) begin
 		end
 	end
 end
-// synopsys translate_on
+// synopsys translate_on				
 endmodule

@@ -4,7 +4,7 @@ close all
 
 for ch = 1:4
     % Output from the reference S/W
-    im_sw = imread(sprintf('out_sw/Final/convout_ch%02d.bmp',ch));
+    im_sw = imread(sprintf('out_sw/ofmap_L03_ch%02d.bmp',ch));
     % Output from the H/W simulation
     %im_hw = imread(sprintf('out/convout_layer01_ch%02d.bmp',ch));
     im_hw = imread(sprintf('out/convout_ch%02d.bmp',ch));
@@ -22,7 +22,3 @@ for ch = 1:4
         imshow(uint8(img_diff));
     end
 end
-
-figure(1)
-imshow(imread('out/convout_2x.bmp'));
-title("High-resolution image by the DNN model");

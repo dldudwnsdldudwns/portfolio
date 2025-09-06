@@ -12,10 +12,7 @@ sram_en,
 sram_we,		
 sram_addr,
 sram_wdata,
-sram_rdata,
-//Output pixel
-out_pixel,
-out_valid
+sram_rdata
 );
 
 //parameter WIDTH = 768;
@@ -28,16 +25,12 @@ parameter N_WORD = WIDTH * HEIGHT;
 parameter W_WORD = $clog2(N_WORD);
 parameter EN_LOAD_INIT_FILE = 1'b1;
 parameter INIT_FILE = "img/butterfly_32bit.hex";
-
-input 				HCLK;
-input 				HRESETn;
-output 				sram_en;
-output 				sram_we;			
-output [W_WORD-1:0] sram_addr;
-output [W_DATA-1:0] sram_wdata;
-input  [W_DATA-1:0] sram_rdata;
-output [31      :0] out_pixel;
-output 				out_valid;
+input HCLK;
+input HRESETn;
+input sram_en, sram_we;			
+input [W_WORD-1:0] sram_addr;
+input [W_DATA-1:0] sram_wdata;
+input [W_DATA-1:0] sram_rdata;
 
 wire	[31:0]			w_RISC2AHB_mst_HADDR ;
 wire	[31:0]			w_RISC2AHB_mst_HWDATA;
@@ -217,17 +210,17 @@ assign	w_AHB_IC_sl_HRDATA	[1*32+:32]	=	out_cnn_sl_HRDATA;
 //---------------------------------------------------------------
 // RISC-V
 ahb_master u_riscv_dummy(      
-	 .HRESETn	(HRESETn				)
-	,.HCLK   	(HCLK					)
-	,.i_HRDATA	(w_RISC2AHB_mst_HRDATA 	)
-	,.i_HRESP 	(w_RISC2AHB_mst_HRESP  	)
-	,.i_HREADY	(w_RISC2AHB_mst_HREADY 	)
-	,.o_HADDR 	(w_RISC2AHB_mst_HADDR  	)
-	,.o_HWDATA	(w_RISC2AHB_mst_HWDATA 	)
-	,.o_HWRITE	(w_RISC2AHB_mst_HWRITE 	)
-	,.o_HSIZE 	(w_RISC2AHB_mst_HSIZE  	)
-	,.o_HBURST	(w_RISC2AHB_mst_HBURST 	)
-	,.o_HTRANS	(w_RISC2AHB_mst_HTRANS 	)
+	 .HRESETn		(HRESETn			)
+	,.HCLK   		(HCLK				)
+	,.i_HRDATA		(w_RISC2AHB_mst_HRDATA )
+	,.i_HRESP 		(w_RISC2AHB_mst_HRESP  )
+	,.i_HREADY		(w_RISC2AHB_mst_HREADY )
+	,.o_HADDR 		(w_RISC2AHB_mst_HADDR  )
+	,.o_HWDATA		(w_RISC2AHB_mst_HWDATA )
+	,.o_HWRITE		(w_RISC2AHB_mst_HWRITE )
+	,.o_HSIZE 		(w_RISC2AHB_mst_HSIZE  )
+	,.o_HBURST		(w_RISC2AHB_mst_HBURST )
+	,.o_HTRANS		(w_RISC2AHB_mst_HTRANS )
 );
 
 // SRAM Controller
@@ -239,54 +232,52 @@ ahb_bram #(
 .INIT_FILE(INIT_FILE))
 u_mem_ctrl
 (
-	.HCLK		(HCLK				),
-	.HRESETn	(HRESETn			),		
-	.HREADY		(mem_sl_HREADY		),
-	.HSEL		(mem_sl_HSEL		),
-	.HTRANS		(mem_sl_HTRANS		),
-	.HBURST		(mem_sl_HBURST		),
-	.HSIZE		(mem_sl_HSIZE		),
-	.HADDR		(mem_sl_HADDR		),
-	.HWRITE		(mem_sl_HWRITE		),
-	.HWDATA		(mem_sl_HWDATA		),
-	.out_HREADY	(out_mem_sl_HREADY	),				
-	.out_HRESP	(out_mem_sl_HRESP	),
-	.out_HRDATA	(out_mem_sl_HRDATA	),
-	.sram_en	(sram_en			),
-	.sram_we	(sram_we			),
-	.sram_addr	(sram_addr			),
-	.sram_rdata	(sram_rdata			),
-	.sram_wdata	(sram_wdata			)	
+	.HCLK(HCLK),
+	.HRESETn(HRESETn),		
+	.HREADY(mem_sl_HREADY),
+	.HSEL(mem_sl_HSEL),
+	.HTRANS(mem_sl_HTRANS),
+	.HBURST(mem_sl_HBURST),
+	.HSIZE(mem_sl_HSIZE),
+	.HADDR(mem_sl_HADDR),
+	.HWRITE(mem_sl_HWRITE),
+	.HWDATA(mem_sl_HWDATA),
+	.out_HREADY(out_mem_sl_HREADY),				
+	.out_HRESP(out_mem_sl_HRESP),
+	.out_HRDATA(out_mem_sl_HRDATA),
+	.sram_en(sram_en),
+	.sram_we(sram_we),
+	.sram_addr(sram_addr),
+	.sram_rdata(sram_rdata),
+	.sram_wdata(sram_wdata)	
 );
 
 // CNN
 cnn_accel u_cnn_accel (
-	.HCLK			(HCLK					), 
-	.HRESETn		(HRESETn				), 
-	.sl_HREADY		(cnn_sl_HREADY			), 
-	.sl_HSEL		(cnn_sl_HSEL			), 
-	.sl_HTRANS		(cnn_sl_HTRANS			), 
-	.sl_HBURST		(cnn_sl_HBURST			), 
-	.sl_HSIZE		(cnn_sl_HSIZE			), 
-	.sl_HADDR		(cnn_sl_HADDR			), 
-	.sl_HWRITE		(cnn_sl_HWRITE			), 
-	.sl_HWDATA		(cnn_sl_HWDATA			),
-	.out_sl_HREADY	(out_cnn_sl_HREADY		), 
-	.out_sl_HRESP	(out_cnn_sl_HRESP		), 
-	.out_sl_HRDATA	(out_cnn_sl_HRDATA		),
-	.HREADY			(w_cnn_img_mst_HREADY	),
-	.HRESP 			(w_cnn_img_mst_HRESP 	),
-	.HRDATA			(w_cnn_img_mst_HRDATA	),	
-	.out_HTRANS		(w_cnn_img_mst_HTRANS	),
-	.out_HBURST		(w_cnn_img_mst_HBURST	),
-	.out_HSIZE		(w_cnn_img_mst_HSIZE	),
-	.out_HPROT		(/*OPEN*/				),
-	.out_HMASTLOCK	(/*OPEN*/				),
-	.out_HADDR		(w_cnn_img_mst_HADDR	),
-	.out_HWRITE		(w_cnn_img_mst_HWRITE	),
-	.out_HWDATA		(w_cnn_img_mst_HWDATA	),
-	.out_pixel		(out_pixel				),
-	.out_valid      (out_valid				)	
+	.HCLK(HCLK), 
+	.HRESETn(HRESETn), 
+	.sl_HREADY(cnn_sl_HREADY), 
+	.sl_HSEL(  cnn_sl_HSEL), 
+	.sl_HTRANS(cnn_sl_HTRANS), 
+	.sl_HBURST(cnn_sl_HBURST), 
+	.sl_HSIZE( cnn_sl_HSIZE), 
+	.sl_HADDR( cnn_sl_HADDR), 
+	.sl_HWRITE(cnn_sl_HWRITE), 
+	.sl_HWDATA(cnn_sl_HWDATA),
+	.out_sl_HREADY(out_cnn_sl_HREADY), 
+	.out_sl_HRESP( out_cnn_sl_HRESP), 
+	.out_sl_HRDATA(out_cnn_sl_HRDATA),
+	.HREADY(w_cnn_img_mst_HREADY),
+	.HRESP (w_cnn_img_mst_HRESP ),
+	.HRDATA(w_cnn_img_mst_HRDATA),	
+	.out_HTRANS(w_cnn_img_mst_HTRANS),
+	.out_HBURST(w_cnn_img_mst_HBURST),
+	.out_HSIZE(w_cnn_img_mst_HSIZE),
+	.out_HPROT(/*OPEN*/),
+	.out_HMASTLOCK(/*OPEN*/),
+	.out_HADDR(w_cnn_img_mst_HADDR),
+	.out_HWRITE(w_cnn_img_mst_HWRITE),
+	.out_HWDATA(w_cnn_img_mst_HWDATA)	
 );
 
 //---------------------------------------------------------------
