@@ -58,6 +58,29 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
 
 <img width="800" alt="Parallel Loading" src="https://github.com/user-attachments/assets/b5fcc739-5ba2-48d3-af3b-b3f5773e7c17" />
 
+# 🩺 Wearable Device 제작 프로젝트
+
+<br/>
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <b>시스템 구성도</b><br/><br/>
+   <img width="500" alt="System Block Diagram" src="https://github.com/user-attachments/assets/c5d999e9-f7bf-4192-9b1d-90467a1df916" />
+  </td>
+  <td align="center">
+   <b>주요 흐름</b><br/><br/>
+   <img width="300" alt="Flow Chart" src="https://github.com/user-attachments/assets/39d275a6-e086-43a0-b70a-e6e8e464a40d" />
+  </td>
+ </tr>
+</table>
+
+<br/>
+
+---
+## 📂 소스 코드
+
+자세한 사항은 `WearableDevice` 폴더에 전체 소스 코드가 있습니다.
 
 # 💻 임베디드 시스템 프로젝트
 
