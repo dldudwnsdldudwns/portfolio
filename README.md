@@ -1,3 +1,36 @@
+<img width="731" height="445" alt="image" src="https://github.com/user-attachments/assets/0b586112-ab75-4e9f-998f-4678d6a8ad32" />특허 유니버시아드 전략수립계획
+
+인공지능발전에 따른 AI 반도체에 관련한 문제를 가지고 전략수립계획을 짜는 공모전에 참가하였다.
+
+폴더안에 pdf p37~75 정량분석 및 데이터 분석을 맡아 작성하였다.
+
+주요한 분석결과는 다음과 같다.
+<img width="813" height="541" alt="Image" src="https://github.com/user-attachments/assets/d187d1c1-830b-4413-8574-b65e05843207" />
+
+<img width="818" height="538" alt="Image" src="https://github.com/user-attachments/assets/dcce3bfd-118d-4cf0-a505-f4abae2127a5" />
+
+뉴로모픽 반도체가 폭발적으로 증가함을 알 수 있었다.
+
+pdf p204~216 까지 조사한 특허 데이터들을 토대로 청구범위에 따른 각 기업별 공백기술을 찾아내어 전략계획 아이디어를 제안하였다.
+<img width="774" height="554" alt="Image" src="https://github.com/user-attachments/assets/ef13cfa2-3add-4cb6-b9e7-91a396d3a287" />
+
+<img width="836" height="439" alt="Image" src="https://github.com/user-attachments/assets/a08129e9-4eea-4bf0-a894-118b1ccb7299" />
+
+<img width="791" height="452" alt="image" src="https://github.com/user-attachments/assets/51a4f92a-1117-49e3-b063-1e8c495a79db" />
+
+분석에 따라 삼성기업의 기존 특허에 공백기술을 적용하는 아이디어를 제안하였다.
+<img width="738" height="360" alt="image" src="https://github.com/user-attachments/assets/0097efc5-269a-41cb-b578-9a1fe2818164" />
+
+<img width="694" height="665" alt="image" src="https://github.com/user-attachments/assets/61dc4415-4ee6-414e-bc8a-9d57de71cf65" />
+<img width="741" height="465" alt="image" src="https://github.com/user-attachments/assets/e98299d6-32dc-4b7c-b383-86ff8cb9154c" />
+<img width="731" height="445" alt="image" src="https://github.com/user-attachments/assets/e4b5925f-955f-41d8-8ca3-f0981397f356" />
+<img width="620" height="465" alt="image" src="https://github.com/user-attachments/assets/c4c44f73-a516-4b97-9e49-58974af8747e" />
+위와 같은 근거와 특허 내용을 다음과 같이 도출하였다.
+<img width="722" height="551" alt="image" src="https://github.com/user-attachments/assets/fd03d23e-9a2a-43a8-9bc5-ec88da5882d5" />
+
+
+구체적인 내용은 특허 유니버시아드 폴더안에 pdf 파일을 통해 확인 할 수 있다.
+
 # 🚀 Super Resolution AI 가속기 최적화 과제
 
 ---
