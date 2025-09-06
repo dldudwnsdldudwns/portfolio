@@ -24,19 +24,18 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
  <tr>
   <td align="center">
    <b>변환 전 (Before)</b><br/>
-   <img width="400" alt="변환 전 이미지" src="https://github.com/user-attachments/assets/d69db266d-1781-4f16-bc83-6aa58efcb632" />
+   <img width="400" alt="Before" src="https://github.com/user-attachments/assets/d69b266d-1781-4f16-bc83-6aa58efcb632" />
   </td>
   <td align="center" style="vertical-align: middle;">
+   <br/>
    <h3>➡️</h3>
   </td>
   <td align="center">
    <b>변환 후 (After)</b><br/>
-   <img width="400" alt="변환 후 이미지" src="https://github.com/user-attachments/assets/9b523713-9137-4db3-90e9-c6df829658fe" />
+   <img width="400" alt="After" src="https://github.com/user-attachments/assets/9b523713-9137-4db3-908e-148f4b275107" />
   </td>
  </tr>
 </table>
-
-<br/>
 
 ---
 ## ✅ 최적화 2: 입력 데이터 리오더링 (Input Data Reordering)
