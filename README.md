@@ -1,3 +1,6 @@
+안녕하세요 해당 직무에 지원한 이영준입니다.
+[제 포트폴리오 저장소 보러가기](https://github.com/dldudwnsdldudwns/portfolio)
+
 
 # 🚀 Super Resolution AI 가속기 최적화 과제
 
