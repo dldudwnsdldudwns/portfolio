@@ -1,102 +1,4 @@
-# 🏆 특허 유니버시아드: AI 반도체 R&D 전략 수립
 
-> ‘인공지능 발전에 따른 AI 반도체’를 주제로 특허 빅데이터를 분석하고, 미래 유망 기술에 대한 R&D 전략 및 특허 확보 방안을 수립하는 공모전에 참가했습니다.
-
-<br/>
-
----
-## 📜 담당 역할
-- **정량분석 및 데이터 분석 (PDF p.37 ~ p.75)**: 특허 동향 및 기술 트렌드 분석
-- **공백기술 도출 및 아이디어 제안 (PDF p.204 ~ p.216)**: 기업별 특허 포트폴리오 분석을 통한 R&D 전략 제안
-
-<br/>
-
----
-## 📊 1. 특허 정량분석 및 핵심 인사이트
-
-특허 빅데이터를 분석하여 AI 반도체 기술의 전체적인 동향을 파악했습니다.
-
-<table align="center">
- <tr>
-  <td align="center">
-   <img width="420" alt="분석 결과 1" src="https://github.com/user-attachments/assets/d187d1c1-830b-4413-8574-b65e05843207" />
-  </td>
-  <td align="center">
-   <img width="420" alt="분석 결과 2" src="https://github.com/user-attachments/assets/dcce3bfd-118d-4cf0-a505-f4abae2127a5" />
-  </td>
- </tr>
-</table>
-
-### 📈 주요 분석 결과
-> 분석 결과, 특히 인간의 뇌를 모방한 **뉴로모픽(Neuromorphic) 반도체** 관련 특허 출원이 폭발적으로 증가하고 있음을 확인했으며, 이를 핵심 유망 기술로 선정했습니다.
-
-<br/>
-
----
-## 🔬 2. 기업별 공백기술 탐색
-
-조사한 특허 데이터를 기반으로, 청구범위 분석을 통해 각 기업별 기술 포트폴리오의 강점과 약점을 파악하고 선점 가능한 **공백기술(White Space)** 영역을 탐색했습니다.
-
-<table align="center">
- <tr>
-  <td align="center">
-   <img width="420" alt="공백기술 분석 1" src="https://github.com/user-attachments/assets/ef13cfa2-3add-4cb6-b9e7-91a396d3a287" />
-  </td>
-  <td align="center">
-   <img width="420" alt="공백기술 분석 2" src="https://github.com/user-attachments/assets/a08129e9-4eea-4bf0-a894-118b1ccb7299" />
-  </td>
- </tr>
-  <tr>
-  <td colspan="2" align="center">
-   <img width="600" alt="공백기술 분석 3" src="https://github.com/user-attachments/assets/51a4f92a-1117-49e3-b063-1e8c495a79db" />
-  </td>
- </tr>
-</table>
-
-<br/>
-
----
-## 💡 3. R&D 전략 아이디어 제안
-
-분석 결과를 바탕으로, **삼성(Samsung)의 기존 뉴로모픽 특허에 탐색한 공백기술을 적용**하여 특허 포트폴리오를 강화하고 기술 경쟁력을 확보하는 R&D 아이디어를 제안했습니다.
-
-<table align="center">
- <tr>
-  <td align="center">
-   <img width="420" alt="아이디어 제안 1" src="https://github.com/user-attachments/assets/0097efc5-269a-41cb-b578-9a1fe2818164" />
-  </td>
-  <td align="center">
-   <img width="420" alt="아이디어 제안 2" src="https://github.com/user-attachments/assets/61dc4415-4ee6-414e-bc8a-9d57de71cf65" />
-  </td>
- </tr>
- <tr>
-  <td align="center">
-   <img width="420" alt="아이디어 제안 3" src="https://github.com/user-attachments/assets/e98299d6-32dc-4b7c-b383-86ff8cb9154c" />
-  </td>
-  <td align="center">
-   <img width="420" alt="아이디어 제안 4" src="https://github.com/user-attachments/assets/e4b5925f-955f-41d8-8ca3-f0981397f356" />
-  </td>
- </tr>
-  <tr>
-  <td colspan="2" align="center">
-   <img width="420" alt="아이디어 제안 5" src="https://github.com/user-attachments/assets/c4c44f73-a516-4b97-9e49-58974af8747e" />
-  </td>
- </tr>
-</table>
-
-### 📑 최종 특허 아이디어 도출
-> 위와 같은 분석 근거와 특허 내용을 종합하여, 최종적으로 다음과 같은 신규 특허 아이디어를 도출했습니다.
-
-<p align="center">
-  <img width="700" alt="최종 도출 내용" src="https://github.com/user-attachments/assets/fd03d23e-9a2a-43a8-9bc5-ec88da5882d5" />
-</p>
-
-<br/>
-
----
-## 📂 참고 자료
-
-더 구체적인 분석 내용 및 제안 아이디어는 `특허 유니버시아드` 폴더 안의 PDF 파일을 통해 확인하실 수 있습니다.
 # 🚀 Super Resolution AI 가속기 최적화 과제
 
 ---
@@ -206,3 +108,102 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
   </td>
  </tr>
 </table>
+# 🏆 특허 유니버시아드: AI 반도체 R&D 전략 수립
+
+> ‘인공지능 발전에 따른 AI 반도체’를 주제로 특허 빅데이터를 분석하고, 미래 유망 기술에 대한 R&D 전략 및 특허 확보 방안을 수립하는 공모전에 참가했습니다.
+
+<br/>
+
+---
+## 📜 담당 역할
+- **정량분석 및 데이터 분석 (PDF p.37 ~ p.75)**: 특허 동향 및 기술 트렌드 분석
+- **공백기술 도출 및 아이디어 제안 (PDF p.204 ~ p.216)**: 기업별 특허 포트폴리오 분석을 통한 R&D 전략 제안
+
+<br/>
+
+---
+## 📊 1. 특허 정량분석 및 핵심 인사이트
+
+특허 빅데이터를 분석하여 AI 반도체 기술의 전체적인 동향을 파악했습니다.
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <img width="420" alt="분석 결과 1" src="https://github.com/user-attachments/assets/d187d1c1-830b-4413-8574-b65e05843207" />
+  </td>
+  <td align="center">
+   <img width="420" alt="분석 결과 2" src="https://github.com/user-attachments/assets/dcce3bfd-118d-4cf0-a505-f4abae2127a5" />
+  </td>
+ </tr>
+</table>
+
+### 📈 주요 분석 결과
+> 분석 결과, 특히 인간의 뇌를 모방한 **뉴로모픽(Neuromorphic) 반도체** 관련 특허 출원이 폭발적으로 증가하고 있음을 확인했으며, 이를 핵심 유망 기술로 선정했습니다.
+
+<br/>
+
+---
+## 🔬 2. 기업별 공백기술 탐색
+
+조사한 특허 데이터를 기반으로, 청구범위 분석을 통해 각 기업별 기술 포트폴리오의 강점과 약점을 파악하고 선점 가능한 **공백기술(White Space)** 영역을 탐색했습니다.
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <img width="420" alt="공백기술 분석 1" src="https://github.com/user-attachments/assets/ef13cfa2-3add-4cb6-b9e7-91a396d3a287" />
+  </td>
+  <td align="center">
+   <img width="420" alt="공백기술 분석 2" src="https://github.com/user-attachments/assets/a08129e9-4eea-4bf0-a894-118b1ccb7299" />
+  </td>
+ </tr>
+  <tr>
+  <td colspan="2" align="center">
+   <img width="600" alt="공백기술 분석 3" src="https://github.com/user-attachments/assets/51a4f92a-1117-49e3-b063-1e8c495a79db" />
+  </td>
+ </tr>
+</table>
+
+<br/>
+
+---
+## 💡 3. R&D 전략 아이디어 제안
+
+분석 결과를 바탕으로, **삼성(Samsung)의 기존 뉴로모픽 특허에 탐색한 공백기술을 적용**하여 특허 포트폴리오를 강화하고 기술 경쟁력을 확보하는 R&D 아이디어를 제안했습니다.
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <img width="420" alt="아이디어 제안 1" src="https://github.com/user-attachments/assets/0097efc5-269a-41cb-b578-9a1fe2818164" />
+  </td>
+  <td align="center">
+   <img width="420" alt="아이디어 제안 2" src="https://github.com/user-attachments/assets/61dc4415-4ee6-414e-bc8a-9d57de71cf65" />
+  </td>
+ </tr>
+ <tr>
+  <td align="center">
+   <img width="420" alt="아이디어 제안 3" src="https://github.com/user-attachments/assets/e98299d6-32dc-4b7c-b383-86ff8cb9154c" />
+  </td>
+  <td align="center">
+   <img width="420" alt="아이디어 제안 4" src="https://github.com/user-attachments/assets/e4b5925f-955f-41d8-8ca3-f0981397f356" />
+  </td>
+ </tr>
+  <tr>
+  <td colspan="2" align="center">
+   <img width="420" alt="아이디어 제안 5" src="https://github.com/user-attachments/assets/c4c44f73-a516-4b97-9e49-58974af8747e" />
+  </td>
+ </tr>
+</table>
+
+### 📑 최종 특허 아이디어 도출
+> 위와 같은 분석 근거와 특허 내용을 종합하여, 최종적으로 다음과 같은 신규 특허 아이디어를 도출했습니다.
+
+<p align="center">
+  <img width="700" alt="최종 도출 내용" src="https://github.com/user-attachments/assets/fd03d23e-9a2a-43a8-9bc5-ec88da5882d5" />
+</p>
+
+<br/>
+
+---
+## 📂 참고 자료
+
+더 구체적인 분석 내용 및 제안 아이디어는 `특허 유니버시아드` 폴더 안의 PDF 파일을 통해 확인하실 수 있습니다.
