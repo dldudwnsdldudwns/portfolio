@@ -356,7 +356,7 @@ static void reset_filter_states(void) {
   last_peak_ms = -1.0f;
 }
 
-// 샘플 처리
+
 static void process_sample(uint32_t ir_raw, float t_ms) {
   if (!worn) {
     if (ir_raw > IR_ON_THRESHOLD) {
@@ -366,7 +366,7 @@ static void process_sample(uint32_t ir_raw, float t_ms) {
         off_cnt = 0;
         reset_filter_states();
         ESP_LOGI(TAG, "Finger ON");
-        // 필요시 ON 상태 알림만 별도 전송 가능
+     
       }
     } else {
       on_cnt = 0;
@@ -465,6 +465,52 @@ static void int_task(void *arg) {
   }
 }
 
+// ======================= databuffer ===============================
+struct SensorDataBuffer {
+    float bpm = 0.0f;
+    float temperature = -99.0f;
+    float humidity = -99.0f;
+    float voltage_percent = 0.0f;
+    char status[8] = "OFF";
+    uint32_t timestamp_ms = 0;
+};
+static SensorDataBuffer g_sensor_data;      
+static SemaphoreHandle_t g_data_mutex;
+void periodic_sender_task(void* pvParameters) {
+    auto* device = static_cast<SolicareDevice*>(pvParameters);
+    const TickType_t send_interval_ms = 2000; // 2초마다 데이터 전송
+
+    ESP_LOGI("SENDER_TASK", "Periodic data sender task started.");
+
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(send_interval_ms)); 
+
+        SensorDataBuffer data_to_send;
+
+        // 뮤텍스로 전역 버퍼를 잠그고 안전하게 현재 데이터를 복사
+        if (xSemaphoreTake(g_data_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+            data_to_send = g_sensor_data; // 조건 없이 현재 데이터를 복사
+            xSemaphoreGive(g_data_mutex); // 복사 후 즉시 잠금 해제
+        }
+        else {
+            ESP_LOGW("SENDER_TASK", "Could not get mutex, skipping send cycle.");
+            continue;
+        }
+
+        ESP_LOGI("SENDER_TASK", "Sending data: BPM %.1f, V %.1f%%, Status: %s",
+            data_to_send.bpm, data_to_send.voltage_percent, data_to_send.status);
+
+        device->send_bpm_json(
+            data_to_send.bpm,
+            data_to_send.temperature,
+            data_to_send.humidity,
+            data_to_send.voltage_percent,
+            data_to_send.status,
+            data_to_send.timestamp_ms
+        );
+    }
+}
+
 // ========= SolicareDevice changes: send JSON with voltage =========
 void SolicareDevice::send_bpm_json(float bpm, float temp, float hum,
                                    float voltage, const char *status,
@@ -478,8 +524,8 @@ void SolicareDevice::send_bpm_json(float bpm, float temp, float hum,
     return;
   }
 
+  char json[256];
 
-  char json[256]; // 버퍼 크기를 넉넉하게 늘림
   int n = snprintf(
       json, sizeof(json),
       "{\"device\":\"%s\",\"bpm\":%.1f,\"temperature\":%.2f,\"humidity\":%.2f,"
@@ -521,7 +567,23 @@ extern "C" void app_main(void) {
     ESP_LOGE(TAG, "❌ Failed to initialize application");
     return;
   }
+  // 뮤텍스, 주기적 전송
+  g_data_mutex = xSemaphoreCreateMutex();
+  if (g_data_mutex == NULL) {
+      ESP_LOGE(TAG, "❌ Failed to create data mutex!");
+      return;
+
+  }
   device.run();
+
+  xTaskCreate(
+      periodic_sender_task,     
+      "periodic_sender_task",   
+      4096,                     
+      &device,                 
+      5,                       
+      NULL
+  );
 
   // 3. 센서 초기화
   aht21b_check_and_init(); // 온습도 센서 초기화 추가
@@ -595,20 +657,36 @@ void SolicareDevice::run() {
 
   // 콜백 함수 내부 로직이 수정되었습니다.
   g_emit_bpm = [this](float bpm, const char *status, uint32_t t_ms) {
-    float vbatt = 0.0f;
-    float temp = -99.0f; // 에러 시 기본값
-    float hum = -99.0f;
+      if (xSemaphoreTake(g_data_mutex, portMAX_DELAY) == pdTRUE) {
 
-    // 인터럽트 발생 시, 모든 센서 값을 즉시 읽어옵니다.
-    read_aht21b_data(temp, hum);
-    bool ok = read_battery_voltage(vbatt);
-    if (!ok) {
-      vbatt = 0.0f;
-      ESP_LOGW(TAG, "Battery read failed, sending voltage=0.0V");
-    }
+          // 다른 센서 값들을 읽어옴
+          read_aht21b_data(g_sensor_data.temperature, g_sensor_data.humidity);
 
-    // 모든 데이터를 취합하여 확장된 JSON 함수로 전송합니다.
-    this->send_bpm_json(bpm, temp, hum, vbatt, status, t_ms);
-  };
+
+          float vbatt = 0.0f;
+          if (read_battery_voltage(vbatt)) {
+              float percentage = (vbatt - 2.5f) / (4.2f - 2.5f) * 100.0f;
+              g_sensor_data.voltage_percent = fmax(0.0f, fmin(100.0f, percentage)); // 0~100% 범위로 제한
+          }
+          else {
+              g_sensor_data.voltage_percent = 0.0f; // 배터리 읽기 실패
+              ESP_LOGW(TAG, "Battery read failed, storing voltage=0.0%%");
+          }
+
+          float corrected_bpm = bpm;
+          if (strcmp(status, "ON") == 0) { // "ON" 상태일 때만 보정 적용
+              corrected_bpm -= 50.0f;
+              if (corrected_bpm < 0) corrected_bpm = 0;
+          }
+
+          // 전역 버퍼 값 업데이트
+          g_sensor_data.bpm = corrected_bpm;
+          strncpy(g_sensor_data.status, status, sizeof(g_sensor_data.status) - 1);
+          g_sensor_data.timestamp_ms = t_ms;
+
+          // 뮤텍스 잠금 해제
+          xSemaphoreGive(g_data_mutex);
+      }
+      };
 
 }

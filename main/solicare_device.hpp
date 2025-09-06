@@ -16,6 +16,7 @@ extern "C" {
 #define DEFAULT_DEVICE_NAME "WEARABLE"
 
 // WiFi and Network Settings
+
 #define DEFAULT_WIFI_SSID "SOLICARE"
 #define DEFAULT_WIFI_PASSWORD "password123"
 
