@@ -1,3 +1,7 @@
+========================= 임베디드 시스템 =============================
+7seg, LED 디바이스 드라이버 구현 -> onnx를 활용하여 Text 기반 감정을 판별하는 BERT모델을 경량화 -> 엣지 임베디드 시스템 구현
+
+동작 사진과 회로사진
 <table align="center">
  <tr>
   <td align="center"><img width="300" alt="Image 1" src="https://github.com/user-attachments/assets/35af3c57-1e1d-4100-8214-6bd298a02a3f" /></td>
