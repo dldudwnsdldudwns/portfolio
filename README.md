@@ -203,3 +203,48 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
 ####  참고 자료
 
 더 구체적인 분석 내용 및 제안 아이디어는 `특허 유니버시아드` 폴더 안의 PDF 파일을 통해 확인하실 수 있습니다.
+
+
+네, 그럼요. '졸음운전 방지 시스템' 프로젝트를 깔끔하고 보기 좋은 README 형식으로 만들어 드릴게요. 요청하신 대로 이미지들은 좌우로 나란히 배치했습니다.
+
+아래 코드를 복사해서 README.md 파일에 그대로 붙여넣으시면 됩니다.
+
+Markdown
+
+##  졸음운전 방지 시스템 (Drowsy Driving Prevention System)
+
+> Real-time CNN 모델을 이용하여 운전자의 자세와 눈 감김을 감지하고, 졸음운전 여부를 판단하여 경고하는 시스템을 개발했습니다.
+
+- **주요 기술**: `CNN`, `Real-time Object Detection`, `Data Preprocessing`, `Python`, `OpenCV`
+- **담당 역할**: **데이터 수집 자동화 및 전처리**
+
+<br/>
+
+### 데이터 처리 과정
+<table align="center">
+ <tr>
+  <td align="center"><img width="260" alt="Data Processing 1" src="https://github.com/user-attachments/assets/ea267421-11eb-4e96-862b-71b31de28ceb" /></td>
+  <td align="center"><img width="260" alt="Data Processing 2" src="https://github.com/user-attachments/assets/c5ba103e-d595-4e41-898c-6180a28a5ca1" /></td>
+  <td align="center"><img width="260" alt="Data Processing 3" src="https://github.com/user-attachments/assets/cac5928e-16fa-420c-9695-574cf2158c4e" /></td>
+ </tr>
+</table>
+
+<br/>
+
+### 시스템 시연
+<table align="center">
+ <tr>
+  <td align="center"><img width="350" alt="Demonstration 1" src="https://github.com/user-attachments/assets/7241708a-4e43-4b19-a42d-c31612311c7f" /></td>
+  <td align="center"><img width="350" alt="Demonstration 2" src="https://github.com/user-attachments/assets/37890204-8de5-43de-8f69-62b61516716b" /></td>
+ </tr>
+</table>
+
+<br/>
+
+###  소스 코드
+자세한 내용은 프로젝트 폴더 안의 소스 파일을 통해 확인하실 수 있습니다.
+
+
+
+
+
