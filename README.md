@@ -1,3 +1,39 @@
+Super Resolution AI 가속기 최적화 과제
+
+CNN 과정에서 이미 계산된 Weights , biases, scales 들이 저장된 hex 파일들은 다음과 같다.
+<img width="1600" height="900" alt="Image" src="https://github.com/user-attachments/assets/a69db5bb-2c13-4bd7-8fd4-21ebb74f31ca" />
+
+그래서 CNN 과정에서 사용되는 버퍼의 크기를 줄이기 위해 '0' 인 값을 생략하는 최적화 방법을 사용하였다.
+
+<img width="1600" height="900" alt="Image" src="https://github.com/user-attachments/assets/2c7448f8-f6ea-458e-840c-2df73573805e" />
+
+<p align="center">
+  <img width="400" alt="Before" src="https://github.com/user-attachments/assets/d69b266d-1781-4f16-bc83-6aa58efcb632" />
+  <br/>
+  <b>원본 (Before)</b>
+</p>
+
+<p align="center">
+  <h3>
+    <br/>
+    ⬇️
+    <br/>
+    
+    <br/>
+    ⬇️
+  </h3>
+</p>
+
+<p align="center">
+  <img width="400" alt="After" src="https://github.com/user-attachments/assets/9b523713-9137-4db3-908e-148f4b275107" />
+  <br/>
+  <b>경량화 후 (After)</b>
+</p>
+
+
+
+
+
 # 💻 임베디드 시스템 프로젝트
 
 > 7seg, LED 디바이스 드라이버 구현 -> onnx를 활용하여 Text 기반 감정을 판별하는 BERT모델을 경량화 -> 엣지 임베디드 시스템 구현
