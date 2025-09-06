@@ -7,7 +7,8 @@
 CNN 연산 과정에 사용되는 가중치(Weights), 편향(Biases), 스케일(Scales) 값과 입력 데이터(Input Data)의 저장 및 접근 방식을 최적화하여 CNN 가속기의 성능과 효율을 향상시키는 것을 목표로 합니다.
 
 <br/>
-
+<img width="380" height="375" alt="Image" src="https://github.com/user-attachments/assets/03425d2b-1511-4b8c-a242-54dc19177a6b" />
+사용한 데이터
 ---
 ## ✅ 최적화 1: 가중치/편향 데이터의 제로-스키핑 (Zero-Skipping)
 
