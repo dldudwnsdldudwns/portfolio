@@ -7,28 +7,22 @@ CNN 과정에서 이미 계산된 Weights , biases, scales 들이 저장된 hex 
 
 <img width="1600" height="900" alt="Image" src="https://github.com/user-attachments/assets/2c7448f8-f6ea-458e-840c-2df73573805e" />
 
-<p align="center">
-  <img width="400" alt="Before" src="https://github.com/user-attachments/assets/d69b266d-1781-4f16-bc83-6aa58efcb632" />
-  <br/>
-  <b>원본 (Before)</b>
-</p>
-
-<p align="center">
-  <h3>
-    <br/>
-    ⬇️
-    <br/>
-    
-    <br/>
-    ⬇️
-  </h3>
-</p>
-
-<p align="center">
-  <img width="400" alt="After" src="https://github.com/user-attachments/assets/9b523713-9137-4db3-908e-148f4b275107" />
-  <br/>
-  <b>경량화 후 (After)</b>
-</p>
+<table align="center">
+ <tr>
+  <td align="center">
+   <b>변환 전 (Before)</b><br/>
+   <img width="400" alt="변환 전 이미지" src="https://github.com/user-attachments/assets/d69b266d-1781-4f16-bc83-6aa58efcb632" />
+  </td>
+  <td align="center" style="vertical-align: middle;">
+   <br/>
+   <h3>➡️</h3>
+  </td>
+  <td align="center">
+   <b>변환 후 (After)</b><br/>
+   <img width="400" alt="변환 후 이미지" src="https://github.com/user-attachments/assets/9b523713-9137-4db3-908e-148f4b275107" />
+  </td>
+ </tr>
+</table>
 
 
 
