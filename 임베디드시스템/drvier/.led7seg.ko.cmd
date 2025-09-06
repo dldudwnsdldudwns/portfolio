@@ -1,0 +1,1 @@
+savedcmd_/home/pree948282/final1/drvier/led7seg.ko := aarch64-linux-gnu-ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T scripts/module.lds -o /home/pree948282/final1/drvier/led7seg.ko /home/pree948282/final1/drvier/led7seg.o /home/pree948282/final1/drvier/led7seg.mod.o;  true
