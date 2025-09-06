@@ -8,8 +8,7 @@ CNN 연산 과정에 사용되는 가중치(Weights), 편향(Biases), 스케일(
 
 <br/>
 <img width="380" height="375" alt="Image" src="https://github.com/user-attachments/assets/03425d2b-1511-4b8c-a242-54dc19177a6b" />
-사용한 데이터
-<br/>
+
 ---
 ## ✅ 최적화 1: 가중치/편향 데이터의 제로-스키핑 (Zero-Skipping)
 
