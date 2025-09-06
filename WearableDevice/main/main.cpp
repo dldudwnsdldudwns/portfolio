@@ -16,13 +16,15 @@
 
 #include "solicare_device.hpp"
 
-// ========= MAX30102 defines (existing) =========
-#define TAG "MAX30102_HR"
+
 #define I2C_NUM I2C_NUM_0
 #define SDA_PIN 18
 #define SCL_PIN 20
 #define I2C_FREQ 400000
 #define I2C_TIMEOUT_MS 1000
+
+// ========= MAX30102 defines (existing) =========
+#define TAG "MAX30102_HR"
 #define ADDR 0x57
 #define REG_INTR_STATUS_1 0x00
 #define REG_INTR_STATUS_2 0x01
@@ -144,7 +146,6 @@ static constexpr int BAT_ADC_SAMPLES = 32;
 static constexpr float R1_OHMS = 30000.0f;
 static constexpr float R2_OHMS = 7500.0f;
 static constexpr float DIV_GAIN_INV = (R1_OHMS + R2_OHMS) / R2_OHMS;
-
 static adc_oneshot_unit_handle_t s_bat_adc = nullptr;
 static adc_cali_handle_t s_bat_cali = nullptr;
 static adc_unit_t s_bat_unit;
