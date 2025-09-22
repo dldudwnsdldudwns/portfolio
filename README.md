@@ -74,11 +74,32 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
   </td>
  </tr>
 </table>
-| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide1.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide2.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide3.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide4.JPG) |
-|:---:|:---:|:---:|:---:|
-| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide5.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide6.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide7.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide8.JPG) |
-| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide9.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide10.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide11.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide12.JPG) |
-| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide13.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide14.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide15.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide16.JPG) |
+<table>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드1.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드2.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드3.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드4.JPG" width="200" /></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드5.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드6.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드7.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드8.JPG" width="200" /></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드9.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드10.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드11.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드12.JPG" width="200" /></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드13.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드14.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드15.JPG" width="200" /></td>
+    <td><img src="https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/슬라이드16.JPG" width="200" /></td>
+  </tr>
+</table>
 
 <br/>
 
