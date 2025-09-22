@@ -74,33 +74,11 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
   </td>
  </tr>
 </table>
-<table>
-  <tr>
-    <td><img src="https://user-images.githubusercontent.com/2df4ee9c-2ae8-4972-9d3e-ecdca967a00b" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/23b334c5-28fd-4336-bb69-2e18f0ee76e0" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/315df16b-1e1e-44f2-9c9a-85b6ed62eb06" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/67c40239-ee42-4b84-8f6f-218a50d7e095" width="240"/></td>
-  </tr>
-  <tr>
-    <td><img src="https://user-images.githubusercontent.com/df14f6d3-aba2-4eb1-b54e-b843255edc75" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/4b19a17e-e26e-4bce-8a3e-908821b013f0" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/22fbe6f8-f29f-4e5f-8f26-04465146b6bb" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/828d1a32-41bd-4655-a2cc-4f5116163420" width="240"/></td>
-  </tr>
-  <tr>
-    <td><img src="https://user-images.githubusercontent.com/5bcf6ffc-220d-4fcb-ac13-c5b660dcafd2" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/5ee83428-1fa5-4fb2-be1d-a980e6772d6e" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/69c0d866-924a-4a0a-986a-d0b35578bab1" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/215cbd25-f617-4242-a244-648757f44b0c" width="240"/></td>
-  </tr>
-  <tr>
-    <td><img src="https://user-images.githubusercontent.com/1ac98fbf-f69f-40ca-9612-89dfb209ab95" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/ebe26f04-cc2c-4717-850b-d19327a40760" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/a0c10021-2c0e-4a7e-b620-45499eca8043" width="240"/></td>
-    <td><img src="https://user-images.githubusercontent.com/f8ba7b20-1eef-4b77-bc70-02f1c860734b" width="240"/></td>
-  </tr>
-</table>
-
+| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide1.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide2.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide3.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide4.JPG) |
+|:---:|:---:|:---:|:---:|
+| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide5.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide6.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide7.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide8.JPG) |
+| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide9.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide10.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide11.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide12.JPG) |
+| ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide13.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide14.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide15.JPG) | ![](https://raw.githubusercontent.com/dldudwnsdldudwns/portfolio/master/assets/slide16.JPG) |
 
 <br/>
 
