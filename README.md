@@ -74,6 +74,13 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
   </td>
  </tr>
 </table>
+| ![](https://github.com/user-attachments/assets/6d47d7ec-5102-4688-b9f4-21602124e972) | ![](https://github.com/user-attachments/assets/a80839ac-cda6-4769-a0b9-e16d243ca351) | ![](https://github.com/user-attachments/assets/d728a20c-60a4-4e9c-9c9e-4ff6d6e6fbee) |
+|:---:|:---:|:---:|
+| ![](https://github.com/user-attachments/assets/1765e16c-4fb2-4dd7-8aaa-767c06f5cc90) | ![](https://github.com/user-attachments/assets/e112fa6f-111b-470f-a15a-d4bc3953e731) | ![](https://github.com/user-attachments/assets/f4f7a989-9177-4fee-aade-0a811ff8921a) |
+| ![](https://github.com/user-attachments/assets/7dc8cce8-82ad-4ad7-9688-3e20ac0eee89) | ![](https://github.com/user-attachments/assets/73d99f13-f688-47cd-b1a3-2afcefe88af1) | ![](https://github.com/user-attachments/assets/07f83091-2d2b-4ee5-81f3-5feaa1f6ae11) |
+| ![](https://github.com/user-attachments/assets/59172eb5-c462-40dc-93fc-89453b17e758) | ![](https://github.com/user-attachments/assets/2d8e0b8c-cbc9-4ee7-8990-aec1fb121ef0) | ![](https://github.com/user-attachments/assets/aed73936-0a2a-46ee-b59f-ed63756f962f) |
+| ![](https://github.com/user-attachments/assets/21e2dabb-5239-4108-808f-c5a5ca8f1a69) | ![](https://github.com/user-attachments/assets/960608d5-7283-4c1f-b9aa-641e48c83123) | ![](https://github.com/user-attachments/assets/f5987984-df63-429a-9b82-17a662630b85) |
+| ![](https://github.com/user-attachments/assets/2a896ee1-07a5-4a67-97a2-3be83866299f) |  |  |
 
 <br/>
 
