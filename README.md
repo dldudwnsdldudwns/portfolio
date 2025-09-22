@@ -74,14 +74,32 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
   </td>
  </tr>
 </table>
-
-| ![](https://user-images.githubusercontent.com/6d47d7ec-5102-4688-b9f4-21602124e972) | ![](https://user-images.githubusercontent.com/a80839ac-cda6-4769-a0b9-e16d243ca351) | ![](https://user-images.githubusercontent.com/d728a20c-60a4-4e9c-9c9e-4ff6d6e6fbee) |
-|:---:|:---:|:---:|
-| ![](https://user-images.githubusercontent.com/1765e16c-4fb2-4dd7-8aaa-767c06f5cc90) | ![](https://user-images.githubusercontent.com/e112fa6f-111b-470f-a15a-d4bc3953e731) | ![](https://user-images.githubusercontent.com/f4f7a989-9177-4fee-aade-0a811ff8921a) |
-| ![](https://user-images.githubusercontent.com/7dc8cce8-82ad-4ad7-9688-3e20ac0eee89) | ![](https://user-images.githubusercontent.com/73d99f13-f688-47cd-b1a3-2afcefe88af1) | ![](https://user-images.githubusercontent.com/07f83091-2d2b-4ee5-81f3-5feaa1f6ae11) |
-| ![](https://user-images.githubusercontent.com/59172eb5-c462-40dc-93fc-89453b17e758) | ![](https://user-images.githubusercontent.com/2d8e0b8c-cbc9-4ee7-8990-aec1fb121ef0) | ![](https://user-images.githubusercontent.com/aed73936-0a2a-46ee-b59f-ed63756f962f) |
-| ![](https://user-images.githubusercontent.com/21e2dabb-5239-4108-808f-c5a5ca8f1a69) | ![](https://user-images.githubusercontent.com/960608d5-7283-4c1f-b9aa-641e48c83123) | ![](https://user-images.githubusercontent.com/f5987984-df63-429a-9b82-17a662630b85) |
-| ![](https://user-images.githubusercontent.com/2a896ee1-07a5-4a67-97a2-3be83866299f) |  |  |
+<table>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/2df4ee9c-2ae8-4972-9d3e-ecdca967a00b" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/23b334c5-28fd-4336-bb69-2e18f0ee76e0" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/315df16b-1e1e-44f2-9c9a-85b6ed62eb06" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/67c40239-ee42-4b84-8f6f-218a50d7e095" width="240"/></td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/df14f6d3-aba2-4eb1-b54e-b843255edc75" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/4b19a17e-e26e-4bce-8a3e-908821b013f0" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/22fbe6f8-f29f-4e5f-8f26-04465146b6bb" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/828d1a32-41bd-4655-a2cc-4f5116163420" width="240"/></td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/5bcf6ffc-220d-4fcb-ac13-c5b660dcafd2" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/5ee83428-1fa5-4fb2-be1d-a980e6772d6e" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/69c0d866-924a-4a0a-986a-d0b35578bab1" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/215cbd25-f617-4242-a244-648757f44b0c" width="240"/></td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/1ac98fbf-f69f-40ca-9612-89dfb209ab95" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/ebe26f04-cc2c-4717-850b-d19327a40760" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/a0c10021-2c0e-4a7e-b620-45499eca8043" width="240"/></td>
+    <td><img src="https://user-images.githubusercontent.com/f8ba7b20-1eef-4b77-bc70-02f1c860734b" width="240"/></td>
+  </tr>
+</table>
 
 
 <br/>
