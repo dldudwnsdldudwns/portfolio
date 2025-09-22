@@ -366,7 +366,7 @@ static void process_sample(uint32_t ir_raw, float t_ms) {
         on_cnt = 0;
         off_cnt = 0;
         reset_filter_states();
-        ESP_LOGI(TAG, "Finger ON");
+        ESP_LOGI(TAG, "착용");
      
       }
     } else {
@@ -379,7 +379,7 @@ static void process_sample(uint32_t ir_raw, float t_ms) {
         worn = false;
         off_cnt = 0;
         on_cnt = 0;
-        ESP_LOGW(TAG, "Finger OFF");
+        ESP_LOGW(TAG, "미착용");
         if (g_emit_bpm)
           g_emit_bpm(0.0f, "OFF", (uint32_t)t_ms);
         return;
