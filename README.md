@@ -101,6 +101,14 @@ CNN 연산에 사용될 사전 계산된 가중치, 편향, 스케일 값들은 
   </tr>
 </table>
 
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/02cc37c5-2509-4d64-85e5-87191fad4bb5" width="300"></td>
+    <td><img src="https://github.com/user-attachments/assets/a67ee376-5c98-4b73-9bb5-41c1bbe1ffbf" width="300"></td>
+    <td><img src="https://github.com/user-attachments/assets/4ca7b3f7-a084-40bd-986a-1a3c9cbcb8fa" width="300"></td>
+  </tr>
+</table>
+
 <br/>
 
 자세한 사항은 WearableDevice 폴더에 Source 코드가 있습니다.
